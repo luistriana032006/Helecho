@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(npx vite *)",
+      "Bash(DISPLAY=:0 npx electron .)",
+      "Bash(echo \"PID=$!\")",
+      "Read(//tmp/**)",
+      "Bash(./node_modules/.bin/electron --version)",
+      "Bash(node -e \"const e = require\\('./node_modules/electron'\\); console.log\\(typeof e, Object.keys\\(e||{}\\).slice\\(0,5\\)\\)\")",
+      "Bash(DISPLAY=:0 /home/luis-triana/Documents/Helecho/node_modules/electron/dist/electron -e \"console.log\\(process.versions.electron\\)\")",
+      "Bash(cat)",
+      "Bash(DISPLAY=:0 /home/luis-triana/Documents/Helecho/node_modules/electron/dist/electron /tmp/test-main.js)",
+      "Bash(DISPLAY=:0 /home/luis-triana/Documents/Helecho/node_modules/electron/dist/electron /home/luis-triana/Documents/Helecho/probe.cjs)",
+      "Bash(DISPLAY=:0 /home/luis-triana/Documents/Helecho/node_modules/electron/dist/electron /home/luis-triana/Documents/Helecho)",
+      "Bash(npm uninstall *)",
+      "Bash(npx electron-vite *)",
+      "Bash(/home/luis-triana/Documents/Helecho/node_modules/electron/dist/electron -e \"console.log\\(process.versions.electron, Object.keys\\(require\\('electron'\\)\\).slice\\(0,8\\)\\)\")",
+      "Bash(DISPLAY=:0 /home/luis-triana/Documents/Helecho/node_modules/electron_bak/dist/electron /home/luis-triana/Documents/Helecho)",
+      "Bash(ldd /home/luis-triana/Documents/Helecho/node_modules/electron/dist/electron)",
+      "Bash(ELECTRON_RUN_AS_NODE=0 DISPLAY=:0 /home/luis-triana/Documents/Helecho/node_modules/electron/dist/electron /home/luis-triana/Documents/Helecho)",
+      "Bash(env -u ELECTRON_RUN_AS_NODE DISPLAY=:0 /home/luis-triana/Documents/Helecho/node_modules/electron/dist/electron --no-sandbox /home/luis-triana/Documents/Helecho)",
+      "Bash(xdotool search *)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+# Dependencias y builds
+node_modules/
+out/
+release/
+dist/
+
+# Datos PERSONALES del usuario — nunca al repositorio:
+# los cuadernillos viven dentro de la carpeta del proyecto
+# (~/Documents/Helecho/cuadernillos) y además son su propio repo git
+cuadernillos/
+
+# Sistema / logs
+*.log
+.DS_Store
+
+# apuntes
+/apuntes
+CLAUDE.dev.md

@@ -1,0 +1,68 @@
+import type { SymbolCategory } from '../../../types/symbols'
+
+export const algebraLineal: SymbolCategory[] = [
+  {
+    id: 'vectores',
+    name: 'Vectores',
+    symbols: [
+      { id: 'vec-v',       name: 'vector v',          latex: '\\vec{v}' },
+      { id: 'vec-u',       name: 'vector u',          latex: '\\vec{u}' },
+      { id: 'vec-w',       name: 'vector w',          latex: '\\vec{w}' },
+      { id: 'vec-0',       name: 'vector cero',       latex: '\\vec{0}' },
+      { id: 'norma',       name: 'norma',             latex: '\\|\\vec{v}\\|' },
+      { id: 'prod-punto',  name: 'producto punto',    latex: '\\vec{u} \\cdot \\vec{v}' },
+      { id: 'prod-cruz',   name: 'producto cruz',     latex: '\\vec{u} \\times \\vec{v}' },
+      { id: 'proyeccion',  name: 'proyección',        latex: '\\text{proy}_{\\vec{u}}\\vec{v}' },
+      { id: 'unit',        name: 'vector unitario',   latex: '\\hat{v}' },
+    ],
+  },
+  {
+    id: 'matrices',
+    name: 'Matrices',
+    symbols: [
+      { id: 'mat-A',       name: 'matriz A',            latex: 'A' },
+      { id: 'transpuesta', name: 'transpuesta',          latex: 'A^T' },
+      { id: 'inversa',     name: 'inversa',              latex: 'A^{-1}' },
+      { id: 'det',         name: 'determinante',         latex: '\\det(A)' },
+      { id: 'traza',       name: 'traza',                latex: '\\text{tr}(A)' },
+      { id: 'rango',       name: 'rango',                latex: '\\text{rg}(A)' },
+      { id: 'identidad',   name: 'matriz identidad',     latex: 'I_n' },
+      { id: 'mat-mn',      name: 'matriz m por n',       latex: 'A_{m \\times n}' },
+      { id: 'conj-hermit', name: 'conjugada hermítica',  latex: 'A^*' },
+    ],
+  },
+  {
+    id: 'griegas',
+    name: 'Letras griegas',
+    symbols: [
+      { id: 'alpha',  name: 'alfa',                     latex: '\\alpha' },
+      { id: 'beta',   name: 'beta',                     latex: '\\beta' },
+      { id: 'gamma',  name: 'gamma',                    latex: '\\gamma' },
+      { id: 'delta',  name: 'delta',                    latex: '\\delta' },
+      { id: 'eps',    name: 'épsilon',                  latex: '\\varepsilon' },
+      { id: 'theta',  name: 'theta',                    latex: '\\theta' },
+      { id: 'mu',     name: 'mu',                       latex: '\\mu' },
+      { id: 'pi',     name: 'pi',                       latex: '\\pi' },
+      { id: 'sigma',  name: 'sigma',                    latex: '\\sigma' },
+      { id: 'phi',    name: 'fi phi',                   latex: '\\phi' },
+      { id: 'omega',  name: 'omega',                    latex: '\\omega' },
+      { id: 'Sigma',  name: 'sigma mayúscula sumatoria', latex: '\\Sigma' },
+    ],
+  },
+  {
+    id: 'relaciones',
+    name: 'Relaciones',
+    symbols: [
+      { id: 'neq',      name: 'diferente no igual',       latex: '\\neq' },
+      { id: 'leq',      name: 'menor o igual',            latex: '\\leq' },
+      { id: 'geq',      name: 'mayor o igual',            latex: '\\geq' },
+      { id: 'approx',   name: 'aproximado',               latex: '\\approx' },
+      { id: 'equiv',    name: 'equivalente',              latex: '\\equiv' },
+      { id: 'in',       name: 'pertenece',                latex: '\\in' },
+      { id: 'notin',    name: 'no pertenece',             latex: '\\notin' },
+      { id: 'subseteq', name: 'contenido subconjunto',    latex: '\\subseteq' },
+      { id: 'forall',   name: 'para todo',                latex: '\\forall' },
+      { id: 'exists',   name: 'existe',                   latex: '\\exists' },
+    ],
+  },
+]

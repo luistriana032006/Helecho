@@ -1,0 +1,118 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: var(--font-geist-sans), 'Geist Fallback';
+  --font-mono: var(--font-geist-mono), 'Geist Mono Fallback';
+
+  /* Helecho palette */
+  --color-green: var(--green);
+  --color-off-white: var(--off-white);
+  --color-forest: var(--forest);
+  --color-onyx: var(--onyx);
+  --color-sacramento: var(--sacramento);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Raw palette */
+  --green: #2dc653;
+  --off-white: #f4f2e4;
+  --forest: #1e8049;
+  --onyx: #0c2c1c;
+  --sacramento: #154734;
+
+  /* The app UI is dark by default (Electron). Tokens map onto the green palette. */
+  --background: var(--onyx);
+  --foreground: var(--off-white);
+  --card: var(--sacramento);
+  --card-foreground: var(--off-white);
+  --popover: #103726;
+  --popover-foreground: var(--off-white);
+  --primary: var(--green);
+  --primary-foreground: #06180e;
+  --secondary: #103726;
+  --secondary-foreground: var(--off-white);
+  --muted: #103726;
+  --muted-foreground: #8fbfa1;
+  --accent: var(--forest);
+  --accent-foreground: var(--off-white);
+  --destructive: oklch(0.62 0.21 25);
+  --border: #1d4c36;
+  --input: #1d4c36;
+  --ring: var(--green);
+  --chart-1: var(--green);
+  --chart-2: var(--forest);
+  --chart-3: #6ee7a0;
+  --chart-4: #b7e4c7;
+  --chart-5: var(--off-white);
+  --radius: 0.625rem;
+  --sidebar: #0a2417;
+  --sidebar-foreground: var(--off-white);
+  --sidebar-primary: var(--green);
+  --sidebar-primary-foreground: #06180e;
+  --sidebar-accent: #103726;
+  --sidebar-accent-foreground: var(--off-white);
+  --sidebar-border: #1d4c36;
+  --sidebar-ring: var(--green);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  mark {
+    background-color: var(--green);
+    color: #06180e;
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+}

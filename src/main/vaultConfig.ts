@@ -1,0 +1,51 @@
+import { app } from 'electron'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { join } from 'path'
+
+/**
+ * Bóveda de cuadernillos configurable (estilo Obsidian): la ruta vive en
+ * userData/helecho-config.json — NUNCA dentro de la carpeta del proyecto,
+ * para que clonar el repositorio no mezcle código con apuntes personales.
+ */
+
+interface HelechoConfig {
+  cuadernillosRoot?: string
+}
+
+const configPath = () => join(app.getPath('userData'), 'helecho-config.json')
+
+let cachedRoot: string | null = null
+
+function readConfig(): HelechoConfig {
+  try {
+    return JSON.parse(readFileSync(configPath(), 'utf-8')) as HelechoConfig
+  } catch {
+    return {}
+  }
+}
+
+function writeConfig(config: HelechoConfig) {
+  mkdirSync(app.getPath('userData'), { recursive: true })
+  writeFileSync(configPath(), JSON.stringify(config, null, 2), 'utf-8')
+}
+
+export function vaultRoot(): string {
+  if (cachedRoot) return cachedRoot
+  const config = readConfig()
+  if (config.cuadernillosRoot) {
+    cachedRoot = config.cuadernillosRoot
+    return cachedRoot
+  }
+  // Primera ejecución sin config: las instalaciones previas a la bóveda
+  // configurable conservan su carpeta; las nuevas usan ~/Helecho
+  const legacy = join(app.getPath('documents'), 'Helecho', 'cuadernillos')
+  const chosen = existsSync(legacy) ? legacy : join(app.getPath('home'), 'Helecho')
+  writeConfig({ ...config, cuadernillosRoot: chosen })
+  cachedRoot = chosen
+  return chosen
+}
+
+export function setVaultRoot(path: string) {
+  writeConfig({ ...readConfig(), cuadernillosRoot: path })
+  cachedRoot = path
+}
