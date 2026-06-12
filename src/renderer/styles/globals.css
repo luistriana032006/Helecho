@@ -233,3 +233,22 @@
 .math-inline:hover {
   background-color: rgb(var(--primary) / 0.15);
 }
+
+/* ── Pin de post-it (extensions/PostIt.ts) ───────────────────────────
+   El nodo inline que ancla la nota al texto. El color va inline en el
+   elemento (lo necesita el clon del export PDF). */
+
+.postit-pin {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  vertical-align: baseline;
+  cursor: pointer;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.9) inset;
+}
+
+.postit-pin.ProseMirror-selectednode {
+  outline: 2px solid rgb(var(--primary));
+  outline-offset: 1px;
+}

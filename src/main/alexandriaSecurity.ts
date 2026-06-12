@@ -199,13 +199,17 @@ export function registerAlexandriaSecurity() {
 
     // Atajos que funcionan aunque el foco esté DENTRO de la página
     // (los keydown del invitado no llegan al renderer de Helecho):
-    // F5/Ctrl+R recarga, F12 abre las DevTools de la página
+    // F5/Ctrl+R recarga, F12 abre las DevTools de la página,
+    // F9 alterna el modo enfoque (solo el webview embebido tiene
+    // hostWebContents; las ventanas de login no participan)
     contents.on('before-input-event', (_event, input) => {
       if (input.type !== 'keyDown') return
       if (input.key === 'F5' || (input.control && input.key.toLowerCase() === 'r')) {
         contents.reload()
       } else if (input.key === 'F12') {
         contents.openDevTools({ mode: 'detach' })
+      } else if (input.key === 'F9') {
+        contents.hostWebContents?.send(IPC.ALEXANDRIA_TOGGLE_FOCUS)
       }
     })
   })

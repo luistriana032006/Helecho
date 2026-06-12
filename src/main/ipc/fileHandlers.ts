@@ -4,6 +4,7 @@ import { basename } from 'path'
 import { IPC } from '../../shared/ipcChannels'
 import { scheduleBackup } from '../gitBackup'
 import { isInsideRoot, notebooksRoot } from './notebookHandlers'
+import { convertToPdf, OFFICE_EXTENSIONS } from './referenceConvert'
 
 const FILTERS = [
   { name: 'Apuntes Helecho', extensions: ['md', 'helecho'] },
@@ -53,25 +54,47 @@ export function registerFileHandlers() {
 
   ipcMain.handle(IPC.APP_GET_VERSION, () => app.getVersion())
 
-  // Documento de referencia (PDF u hoja de cálculo): el usuario lo
-  // elige con diálogo y se envían los bytes al renderer
+  // Documento de referencia: PDF y hojas de cálculo van directo; Word y
+  // PowerPoint se convierten a PDF con LibreOffice (referenceConvert.ts).
+  // El renderer recibe los bytes + el formato con que debe mostrarlos.
+  const SHEET_EXTENSIONS = ['xlsx', 'xls', 'csv', 'ods']
+
+  const loadReferenceDoc = async (filePath: string) => {
+    const ext = filePath.split('.').pop()?.toLowerCase() ?? ''
+    const name = basename(filePath)
+    if (OFFICE_EXTENSIONS.includes(ext)) {
+      return { name, path: filePath, data: await convertToPdf(filePath), format: 'pdf' as const }
+    }
+    const data = await readFile(filePath)
+    return {
+      name,
+      path: filePath,
+      data,
+      format: ext === 'pdf' ? ('pdf' as const) : ('sheet' as const),
+    }
+  }
+
   ipcMain.handle(IPC.REFERENCE_OPEN_DOC, async () => {
     try {
       const { canceled, filePaths } = await dialog.showOpenDialog({
         title: 'Abrir documento de referencia',
         filters: [
-          { name: 'PDF y hojas de cálculo', extensions: ['pdf', 'xlsx', 'xls', 'csv', 'ods'] },
+          {
+            name: 'Documentos de referencia',
+            extensions: ['pdf', ...OFFICE_EXTENSIONS, ...SHEET_EXTENSIONS],
+          },
           { name: 'PDF', extensions: ['pdf'] },
-          { name: 'Hojas de cálculo', extensions: ['xlsx', 'xls', 'csv', 'ods'] },
+          { name: 'Word / PowerPoint', extensions: OFFICE_EXTENSIONS },
+          { name: 'Hojas de cálculo', extensions: SHEET_EXTENSIONS },
         ],
         properties: ['openFile'],
       })
       if (canceled || !filePaths.length) return null
-      const data = await readFile(filePaths[0])
-      return { name: basename(filePaths[0]), path: filePaths[0], data }
+      return await loadReferenceDoc(filePaths[0])
     } catch (err) {
       console.error('reference:openDoc error', err)
-      return null
+      // El error de conversión llega al usuario (p. ej. falta LibreOffice)
+      return { error: err instanceof Error ? err.message : 'No se pudo abrir el documento.' }
     }
   })
 
@@ -80,9 +103,8 @@ export function registerFileHandlers() {
   ipcMain.handle(IPC.REFERENCE_READ, async (_e, filePath: string) => {
     try {
       const ext = filePath.split('.').pop()?.toLowerCase() ?? ''
-      if (!['pdf', 'xlsx', 'xls', 'csv', 'ods'].includes(ext)) return null
-      const data = await readFile(filePath)
-      return { name: basename(filePath), path: filePath, data }
+      if (!['pdf', ...OFFICE_EXTENSIONS, ...SHEET_EXTENSIONS].includes(ext)) return null
+      return await loadReferenceDoc(filePath)
     } catch {
       // archivo movido o eliminado: el renderer lo olvida en silencio
       return null

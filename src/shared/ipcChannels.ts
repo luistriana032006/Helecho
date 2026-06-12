@@ -23,6 +23,9 @@ export const IPC = {
   NOTEBOOK_RENAME:         'notebook:rename',
   SEARCH_GLOBAL:           'search:global',
   ALEXANDRIA_OPEN_TAB:     'alexandria:openTab',
+  ALEXANDRIA_TOGGLE_FOCUS: 'alexandria:toggleFocus',
+  ALEXANDRIA_ADBLOCK_GET:  'alexandria:adblockGet',
+  ALEXANDRIA_ADBLOCK_SET:  'alexandria:adblockSet',
   VAULT_GET:               'vault:get',
   VAULT_SELECT:            'vault:select',
 } as const

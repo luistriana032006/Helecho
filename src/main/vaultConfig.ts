@@ -10,6 +10,8 @@ import { join } from 'path'
 
 interface HelechoConfig {
   cuadernillosRoot?: string
+  /** Bloqueo de anuncios de Alexandria (apagado por defecto) */
+  alexandriaAdblock?: boolean
 }
 
 const configPath = () => join(app.getPath('userData'), 'helecho-config.json')
@@ -48,4 +50,12 @@ export function vaultRoot(): string {
 export function setVaultRoot(path: string) {
   writeConfig({ ...readConfig(), cuadernillosRoot: path })
   cachedRoot = path
+}
+
+export function adblockEnabled(): boolean {
+  return readConfig().alexandriaAdblock ?? false
+}
+
+export function setAdblockEnabled(enabled: boolean) {
+  writeConfig({ ...readConfig(), alexandriaAdblock: enabled })
 }

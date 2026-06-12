@@ -40,8 +40,14 @@ declare global {
       setMateriaCollection: (materiaName: string, coleccion: string | null) => Promise<{ success: boolean }>
       deleteNotebookItem: (path: string, label: string) => Promise<{ success: boolean; canceled?: boolean }>
       confirmUnsaved: (fileName: string) => Promise<number>
-      openReferenceDoc: () => Promise<{ name: string; path: string; data: Uint8Array } | null>
-      readReferenceDoc: (filePath: string) => Promise<{ name: string; path: string; data: Uint8Array } | null>
+      openReferenceDoc: () => Promise<
+        | { name: string; path: string; data: Uint8Array; format: 'pdf' | 'sheet' }
+        | { error: string }
+        | null
+      >
+      readReferenceDoc: (
+        filePath: string
+      ) => Promise<{ name: string; path: string; data: Uint8Array; format: 'pdf' | 'sheet' } | null>
       renameNotebookItem: (path: string, newName: string) => Promise<{ success: boolean; newPath?: string; error?: string }>
       watchFile: (filePath: string) => Promise<void>
       unwatchFile: () => Promise<void>
@@ -50,6 +56,9 @@ declare global {
       onSaveRequest: (callback: () => void) => void
       saveReply: (success: boolean) => void
       onAlexandriaOpenTab: (callback: (url: string) => void) => void
+      onAlexandriaToggleFocus: (callback: () => void) => void
+      getAdblockEnabled: () => Promise<boolean>
+      setAdblockEnabled: (enabled: boolean) => Promise<{ success: boolean; error?: string }>
       getVaultRoot: () => Promise<string>
       selectVaultRoot: () => Promise<{ success: boolean; root?: string; canceled?: boolean }>
     }

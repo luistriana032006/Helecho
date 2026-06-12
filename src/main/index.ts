@@ -9,6 +9,7 @@ import { registerWatchHandlers } from './ipc/watchHandlers'
 import { notebooksRoot } from './ipc/notebookHandlers'
 import { runBackup } from './gitBackup'
 import { registerAlexandriaSecurity, hardenWebviews } from './alexandriaSecurity'
+import { registerAdblockHandlers, initAdblock } from './adblocker'
 
 // Estado de cambios sin guardar, espejado desde el renderer.
 // El main decide el cierre por sí solo: si el renderer no reporta
@@ -118,6 +119,10 @@ app.whenReady().then(() => {
   registerNotebookHandlers()
   registerWatchHandlers()
   registerAlexandriaSecurity()
+  registerAdblockHandlers()
+  // Si el usuario dejó el bloqueo de anuncios activado, se reengancha solo
+  // (asíncrono: no retrasa la creación de la ventana)
+  void initAdblock()
 
   ipcMain.on(IPC.APP_SET_DIRTY, (_e, dirty: boolean, fileName: string) => {
     isDirty = dirty

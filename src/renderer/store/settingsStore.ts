@@ -29,6 +29,8 @@ interface SettingsState {
   alexandriaWidth: number
   /** Última ruta abierta en el panel de referencia (se restaura al expandir) */
   referenceLastPath: string | null
+  /** Incluir los post-its al exportar el PDF del apunte */
+  postitsInPdf: boolean
   zoom: number
   setPageMode: (mode: PageMode) => void
   setSidebarWidth: (width: number) => void
@@ -36,6 +38,7 @@ interface SettingsState {
   setReferenceWidth: (width: number) => void
   setAlexandriaWidth: (width: number) => void
   setReferenceLastPath: (path: string | null) => void
+  setPostitsInPdf: (value: boolean) => void
   setZoom: (zoom: number) => void
 }
 
@@ -51,6 +54,7 @@ export const useSettingsStore = create<SettingsState>()(
       referenceWidth: 380,
       alexandriaWidth: 420,
       referenceLastPath: null,
+      postitsInPdf: true,
       zoom: 1,
       setPageMode: (mode) => set({ pageMode: mode }),
       setSidebarWidth: (width) => set({ sidebarWidth: clamp(width, SIDEBAR_MIN, SIDEBAR_MAX) }),
@@ -58,6 +62,7 @@ export const useSettingsStore = create<SettingsState>()(
       setReferenceWidth: (width) => set({ referenceWidth: clamp(width, REFERENCE_MIN, REFERENCE_MAX) }),
       setAlexandriaWidth: (width) => set({ alexandriaWidth: clamp(width, ALEXANDRIA_MIN, ALEXANDRIA_MAX) }),
       setReferenceLastPath: (path) => set({ referenceLastPath: path }),
+      setPostitsInPdf: (value) => set({ postitsInPdf: value }),
       // Redondea a pasos de 10% para evitar valores como 0.7000000000000001
       setZoom: (zoom) => set({ zoom: Math.round(clamp(zoom, ZOOM_MIN, ZOOM_MAX) * 10) / 10 }),
     }),

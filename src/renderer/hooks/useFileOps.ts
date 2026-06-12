@@ -1,6 +1,8 @@
 import type { Editor } from '@tiptap/react'
 import { useNotebookStore } from '../store/notebookStore'
+import { useSettingsStore } from '../store/settingsStore'
 import { serialize, parse } from '../../shared/mdSerializer'
+import { postitColor } from '../components/Editor/extensions/PostIt'
 
 export function useFileOps(editor: Editor | null) {
   const { filePath, setFilePath, setDirty } = useNotebookStore()
@@ -98,6 +100,36 @@ export function useFileOps(editor: Editor | null) {
     // paginación) que viven dentro del editor pero no son contenido
     const clone = el.cloneNode(true) as HTMLElement
     clone.querySelectorAll('.drag-handle, .page-break-spacer, .plane-toolbar, .plane-instruments, .mermaid-toolbar').forEach((n) => n.remove())
+
+    // Post-its: opcionales en el PDF (Configuración). Si van, la nota se
+    // reconstruye junto a su pin con el mismo desplazamiento que en pantalla
+    // (estilos inline: el HTML del print no carga el CSS de la app)
+    const includePostits = useSettingsStore.getState().postitsInPdf
+    clone.querySelectorAll('[data-type="postit"]').forEach((pin) => {
+      if (!includePostits) {
+        pin.remove()
+        return
+      }
+      const text = pin.getAttribute('data-text') ?? ''
+      const palette = postitColor(pin.getAttribute('data-color') ?? 'amarillo')
+      const dx = Number(pin.getAttribute('data-dx')) || 0
+      const dy = Number(pin.getAttribute('data-dy')) || 0
+      pin.setAttribute(
+        'style',
+        `${pin.getAttribute('style') ?? ''};position:relative;display:inline-block;width:10px;height:10px;border-radius:3px;`
+      )
+      const note = document.createElement('span')
+      note.textContent = text
+      note.setAttribute(
+        'style',
+        `position:absolute;left:${dx}px;top:${dy}px;width:176px;display:block;` +
+          `background:${palette.bg};border-radius:3px;padding:6px 8px;` +
+          'font-size:11px;line-height:1.35;color:#27272a;white-space:pre-wrap;' +
+          'word-break:break-word;box-shadow:0 1px 3px rgba(0,0,0,0.25);z-index:40;'
+      )
+      pin.appendChild(note)
+    })
+
     await window.helecho.exportPdf(clone.innerHTML)
   }
 

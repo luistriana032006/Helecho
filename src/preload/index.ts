@@ -77,6 +77,16 @@ contextBridge.exposeInMainWorld('helecho', {
     ipcRenderer.on(IPC.ALEXANDRIA_OPEN_TAB, (_e, url: string) => callback(url))
   },
 
+  onAlexandriaToggleFocus: (callback: () => void) => {
+    ipcRenderer.on(IPC.ALEXANDRIA_TOGGLE_FOCUS, () => callback())
+  },
+
+  getAdblockEnabled: () =>
+    ipcRenderer.invoke(IPC.ALEXANDRIA_ADBLOCK_GET),
+
+  setAdblockEnabled: (enabled: boolean) =>
+    ipcRenderer.invoke(IPC.ALEXANDRIA_ADBLOCK_SET, enabled),
+
   getVaultRoot: () =>
     ipcRenderer.invoke(IPC.VAULT_GET),
 

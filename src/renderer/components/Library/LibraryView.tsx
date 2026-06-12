@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Leaf, Plus, Search, Settings, X, CalendarPlus } from 'lucide-react'
+import { Globe, Leaf, Plus, Search, Settings, X, CalendarPlus } from 'lucide-react'
 import type { MateriaInfo, CuadernilloInfo, SearchResult } from '../../../shared/notebookTypes'
 import InlineCreate from '../common/InlineCreate'
 import { ParticlesBackground } from './ParticlesBackground'
@@ -9,6 +9,8 @@ interface Props {
   onDeleted?: (path: string) => void
   onRenamed?: (oldPath: string, newPath: string) => void
   onSettings?: () => void
+  /** Abre Alexandria en modo general (pantalla completa, sin cuadernillo) */
+  onAlexandria?: () => void
 }
 
 function fmtMs(ms: number) {
@@ -214,7 +216,7 @@ function SubjectSection(props: SubjectSectionProps) {
 
 /* ── Library view ──────────────────────────────────────────────── */
 
-export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, onSettings }: Props) {
+export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, onSettings, onAlexandria }: Props) {
   const [materias, setMaterias] = useState<MateriaInfo[]>([])
   const [loaded, setLoaded] = useState(false)
   const [addingMateria, setAddingMateria] = useState(false)
@@ -387,6 +389,17 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
                 className="flex h-9 shrink-0 items-center gap-1.5 rounded-md bg-primary px-3.5 text-sm font-medium text-primary-foreground hover:opacity-90"
               >
                 <Plus className="size-4" aria-hidden /> Nueva materia
+              </button>
+            )}
+            {onAlexandria && (
+              <button
+                type="button"
+                onClick={onAlexandria}
+                title="Alexandria — navegador"
+                aria-label="Alexandria — navegador"
+                className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <Globe className="size-4" aria-hidden />
               </button>
             )}
             {onSettings && (

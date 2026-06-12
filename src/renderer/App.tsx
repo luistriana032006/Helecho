@@ -10,8 +10,9 @@ import NotebookSidebar from './components/Notebook/NotebookSidebar'
 import LibraryView from './components/Library/LibraryView'
 import ReferencePanel from './components/Reference/ReferencePanel'
 import AlexandriaPanel from './components/Alexandria/AlexandriaPanel'
+import AlexandriaView from './components/Alexandria/AlexandriaView'
 
-type View = 'library' | 'editor'
+type View = 'library' | 'editor' | 'alexandria'
 
 export default function App() {
   const editor = useEditor()
@@ -20,6 +21,9 @@ export default function App() {
   const fileName = useNotebookStore((s) => s.fileName())
   const [showSettings, setShowSettings] = useState(false)
   const [view, setView] = useState<View>('library')
+  // Modo enfoque (solo editor): oculta sidebar de cuadernillos y menú de
+  // símbolos para leer en Alexandria y apuntar sin estorbos. No se persiste.
+  const [focusMode, setFocusMode] = useState(false)
   // Cambia con cada cambio de bóveda: remonta la biblioteca para que liste
   // la carpeta nueva aunque ya estuviera visible
   const [vaultEpoch, setVaultEpoch] = useState(0)
@@ -108,6 +112,40 @@ export default function App() {
     })
   }, [])
 
+  // Modo enfoque: F9 siempre; "f" suelta solo si no se está escribiendo
+  // (estilo YouTube — en un campo de texto la letra se escribe normal)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (view !== 'editor') return
+      if (e.key === 'F9') {
+        e.preventDefault()
+        setFocusMode((f) => !f)
+        return
+      }
+      if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const target = e.target as HTMLElement | null
+        const typing =
+          target?.isContentEditable ||
+          target?.closest('input, textarea, [contenteditable="true"]')
+        if (typing) return
+        e.preventDefault()
+        setFocusMode((f) => !f)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [view])
+
+  // F9 con el foco DENTRO de una página de Alexandria: el keydown no llega
+  // al renderer — el main lo captura (before-input-event) y avisa por IPC
+  const viewRef = useRef(view)
+  viewRef.current = view
+  useEffect(() => {
+    window.helecho.onAlexandriaToggleFocus(() => {
+      if (viewRef.current === 'editor') setFocusMode((f) => !f)
+    })
+  }, [])
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (view !== 'editor') return
@@ -127,6 +165,10 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler, true)
   }, [save, open, newFile, exportPdf, view])
 
+  if (view === 'alexandria') {
+    return <AlexandriaView onBack={() => setView('library')} />
+  }
+
   if (view === 'library') {
     return (
       <div className="h-screen w-screen">
@@ -136,6 +178,7 @@ export default function App() {
           onDeleted={handleDeleted}
           onRenamed={handleRenamed}
           onSettings={() => setShowSettings(true)}
+          onAlexandria={() => setView('alexandria')}
         />
         <SettingsDialog
           open={showSettings}
@@ -149,12 +192,15 @@ export default function App() {
   return (
     <div className="flex h-screen w-screen bg-background">
       <AlexandriaPanel />
-      <NotebookSidebar onOpenFile={openPath} />
+      {!focusMode && <NotebookSidebar onOpenFile={openPath} />}
       <HelechoEditor
         editor={editor}
         fileName={fileName}
         isDirty={isDirty}
-        onHome={() => setView('library')}
+        onHome={() => {
+          setFocusMode(false)
+          setView('library')
+        }}
         onNew={newFile}
         onOpen={open}
         onSave={save}
@@ -162,7 +208,12 @@ export default function App() {
         onSettings={() => setShowSettings(true)}
       />
       <ReferencePanel />
-      <SymbolMenu editor={editor} />
+      {!focusMode && <SymbolMenu editor={editor} />}
+      {focusMode && (
+        <div className="pointer-events-none fixed bottom-4 right-4 z-50 rounded-full bg-foreground/80 px-3 py-1.5 text-xs text-background shadow-lg">
+          Modo enfoque — F9 para salir
+        </div>
+      )}
       <SettingsDialog
         open={showSettings}
         onClose={() => setShowSettings(false)}

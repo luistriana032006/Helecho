@@ -1,10 +1,67 @@
 import { useRef } from 'react'
-import { ArrowLeft, List, ListOrdered, LineChart, Minus, Plus, ImageIcon, GitBranch } from 'lucide-react'
+import { ArrowLeft, List, ListOrdered, LineChart, Minus, Plus, ImageIcon, GitBranch, StickyNote } from 'lucide-react'
 import type { Editor } from '@tiptap/react'
 import TablePicker from './TablePicker'
 import TableControls from './TableControls'
 import FileMenu from '../Layout/FileMenu'
 import { useSettingsStore } from '../../store/settingsStore'
+import { EDITOR_FONTS, fontByStack, fontById } from '../../../shared/fonts'
+
+/** Selector de tipografía por selección (estilo Word). Vacío = la fuente
+ *  por defecto del editor; cada opción se previsualiza con su propia pila. */
+function FontSelect({ editor }: { editor: Editor }) {
+  const currentStack = (editor.getAttributes('textStyle').fontFamily as string | undefined) ?? ''
+  const currentId = currentStack ? fontByStack(currentStack)?.id ?? '' : ''
+  return (
+    <select
+      value={currentId}
+      onMouseDown={(e) => e.stopPropagation()}
+      onChange={(e) => {
+        const font = fontById(e.target.value)
+        if (font) editor.chain().focus().setFontFamily(font.stack).run()
+        else editor.chain().focus().unsetFontFamily().run()
+      }}
+      title="Tipografía del texto seleccionado"
+      aria-label="Tipografía"
+      className="h-7 max-w-36 rounded border border-border bg-background px-1 text-xs outline-none hover:bg-muted"
+    >
+      <option value="">Predeterminada</option>
+      {EDITOR_FONTS.map((f) => (
+        <option key={f.id} value={f.id} style={{ fontFamily: f.stack }}>
+          {f.label}
+        </option>
+      ))}
+    </select>
+  )
+}
+
+const FONT_SIZES = [10, 12, 14, 16, 18, 20, 24, 28, 32, 40]
+
+/** Tamaño del texto seleccionado, en px. Vacío = tamaño por defecto. */
+function FontSizeSelect({ editor }: { editor: Editor }) {
+  const raw = (editor.getAttributes('textStyle').fontSize as string | undefined) ?? ''
+  const current = raw ? String(parseInt(raw, 10)) : ''
+  return (
+    <select
+      value={current}
+      onMouseDown={(e) => e.stopPropagation()}
+      onChange={(e) => {
+        if (e.target.value) editor.chain().focus().setFontSize(`${e.target.value}px`).run()
+        else editor.chain().focus().unsetFontSize().run()
+      }}
+      title="Tamaño del texto seleccionado"
+      aria-label="Tamaño de texto"
+      className="h-7 rounded border border-border bg-background px-1 text-xs outline-none hover:bg-muted"
+    >
+      <option value="">Tamaño</option>
+      {FONT_SIZES.map((s) => (
+        <option key={s} value={s}>
+          {s}
+        </option>
+      ))}
+    </select>
+  )
+}
 
 const btn = 'flex h-7 min-w-7 items-center justify-center rounded px-1.5 text-sm hover:bg-muted'
 const btnActive = `${btn} bg-muted text-foreground`
@@ -113,6 +170,11 @@ export default function Toolbar({ editor, fileName, isDirty, onHome, onNew, onOp
 
           {sep}
 
+          <FontSelect editor={editor} />
+          <FontSizeSelect editor={editor} />
+
+          {sep}
+
           <button
             type="button"
             className={`${editor.isActive('bold') ? btnActive : btn} font-bold`}
@@ -168,6 +230,21 @@ export default function Toolbar({ editor, fileName, isDirty, onHome, onNew, onOp
             title="Insertar diagrama Mermaid (flujo, secuencia, estados)"
           >
             <GitBranch className="size-4" aria-hidden /> Diagrama
+          </button>
+
+          <button
+            type="button"
+            className={`${btn} gap-1 px-2`}
+            onMouseDown={(e) => {
+              e.preventDefault()
+              editor.chain().focus().insertContent([
+                { type: 'postit', attrs: { id: crypto.randomUUID() } },
+                { type: 'text', text: ' ' },
+              ]).run()
+            }}
+            title="Post-it anclado al punto del texto donde está el cursor"
+          >
+            <StickyNote className="size-4" aria-hidden /> Post-it
           </button>
 
           <button

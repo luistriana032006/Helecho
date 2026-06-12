@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { EditorContent } from '@tiptap/react'
 import type { Editor } from '@tiptap/react'
 import Toolbar from './Toolbar'
+import PostItLayer from './PostItLayer'
 import { PAGE_HEIGHT, PAGE_WIDTH, PAGE_MARGIN } from './pageMetrics'
 import { useSettingsStore } from '../../store/settingsStore'
 
@@ -51,6 +52,9 @@ export default function HelechoEditor({ editor, fileName, isDirty, onHome, onNew
       style={{ padding: PAGE_MARGIN }}
     >
       <EditorContent editor={editor} />
+      {/* Post-its flotantes: dentro del contenedor del contenido para
+          compartir coordenadas, zoom y scroll con el texto */}
+      <PostItLayer editor={editor} />
     </div>
   )
 

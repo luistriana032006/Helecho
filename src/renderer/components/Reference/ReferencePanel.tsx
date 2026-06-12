@@ -34,6 +34,7 @@ function parseExcel(name: string, data: Uint8Array): RefDoc {
 export default function ReferencePanel() {
   const [collapsed, setCollapsed] = useState(true)
   const [doc, setDoc] = useState<RefDoc | null>(null)
+  const [busy, setBusy] = useState(false)
   const [activeSheet, setActiveSheet] = useState(0)
   const panelRef = useRef<HTMLElement>(null)
   const width = useSettingsStore((s) => s.referenceWidth)
@@ -45,10 +46,11 @@ export default function ReferencePanel() {
     if (d?.kind === 'pdf') URL.revokeObjectURL(d.url)
   }
 
-  const loadDoc = (result: { name: string; path: string; data: Uint8Array }) => {
-    const ext = result.name.split('.').pop()?.toLowerCase() ?? ''
+  // El formato lo decide el main (Word/PPT llegan YA convertidos a PDF por
+  // LibreOffice): aquí solo se muestra según `format`, nunca según extensión
+  const loadDoc = (result: { name: string; path: string; data: Uint8Array; format: 'pdf' | 'sheet' }) => {
     releaseDoc(doc)
-    if (ext === 'pdf') {
+    if (result.format === 'pdf') {
       const blob = new Blob([new Uint8Array(result.data)], { type: 'application/pdf' })
       setDoc({ kind: 'pdf', name: result.name, url: URL.createObjectURL(blob) })
     } else {
@@ -59,26 +61,36 @@ export default function ReferencePanel() {
   }
 
   const openDoc = async () => {
-    const result = await window.helecho.openReferenceDoc()
-    if (!result) return
+    setBusy(true)
     try {
+      const result = await window.helecho.openReferenceDoc()
+      if (!result) return
+      if ('error' in result) {
+        window.alert(result.error)
+        return
+      }
       loadDoc(result)
       setCollapsed(false)
     } catch (err) {
       console.error('Error al abrir el documento de referencia', err)
       window.alert('No se pudo abrir el documento. ¿El archivo está dañado?')
+    } finally {
+      setBusy(false)
     }
   }
 
   const expand = async () => {
     setCollapsed(false)
     if (doc || !lastPath) return
+    setBusy(true)
     try {
       const result = await window.helecho.readReferenceDoc(lastPath)
       if (result) loadDoc(result)
       else setLastPath(null)
     } catch {
       setLastPath(null)
+    } finally {
+      setBusy(false)
     }
   }
 
@@ -130,9 +142,10 @@ export default function ReferencePanel() {
         <div className="ml-auto flex items-center gap-1 shrink-0">
           <button
             onClick={openDoc}
-            className="rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+            disabled={busy}
+            className="rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
-            Abrir…
+            {busy ? 'Abriendo…' : 'Abrir…'}
           </button>
           {doc && (
             <button
@@ -175,16 +188,19 @@ export default function ReferencePanel() {
         <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
           <BookOpen className="size-8 text-muted-foreground" aria-hidden />
           <p className="text-sm text-muted-foreground">
-            Abre un PDF o una hoja de cálculo para tenerla al lado mientras tomas apuntes.
+            Abre un PDF, un Word, un PowerPoint o una hoja de cálculo para
+            tenerlo al lado mientras tomas apuntes.
           </p>
           <p className="text-xs text-muted-foreground/70">
             Selecciona texto o celdas, copia con Ctrl+C y pega directo en tu cuadernillo.
+            Word y PowerPoint se muestran como PDF (vía LibreOffice).
           </p>
           <button
             onClick={openDoc}
-            className="h-8 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-90"
+            disabled={busy}
+            className="h-8 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
-            Abrir…
+            {busy ? 'Convirtiendo…' : 'Abrir…'}
           </button>
         </div>
       )}

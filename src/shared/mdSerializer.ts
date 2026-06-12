@@ -1,5 +1,8 @@
+import { fontById, fontByStack } from './fonts'
+
 interface TextMark {
   type: string
+  attrs?: Record<string, unknown>
 }
 
 interface TipTapNode {
@@ -99,12 +102,51 @@ function serializeInlineNode(node: TipTapNode): string {
     if (marks.some((m) => m.type === 'bold')) text = `**${text}**`
     if (marks.some((m) => m.type === 'strike')) text = `~~${text}~~`
     if (marks.some((m) => m.type === 'underline')) text = `<u>${text}</u>`
+    // Tipografía y tamaño por selección (misma marca textStyle): la
+    // etiqueta va POR FUERA de las demás marcas (el parse procesa su
+    // contenido recursivamente). La fuente se guarda con el ID estable
+    // del catálogo; una pila desconocida viaja tal cual.
+    const styleMark = marks.find((m) => m.type === 'textStyle')
+    const stack = styleMark?.attrs?.fontFamily as string | undefined
+    const size = parseInt((styleMark?.attrs?.fontSize as string | undefined) ?? '', 10)
+    const fontAttrs = [
+      ...(stack ? [`face="${fontByStack(stack)?.id ?? stack}"`] : []),
+      ...(Number.isFinite(size) ? [`size="${size}"`] : []),
+    ]
+    if (fontAttrs.length > 0) text = `<font ${fontAttrs.join(' ')}>${text}</font>`
     return text
   }
   if (node.type === 'mathInline') {
     return `$${(node.attrs?.latex as string) ?? ''}$`
   }
+  if (node.type === 'postit') {
+    const a = node.attrs ?? {}
+    return (
+      `<postit id="${(a.id as string) ?? ''}" color="${(a.color as string) ?? 'amarillo'}" ` +
+      `dx="${(a.dx as number) ?? 0}" dy="${(a.dy as number) ?? 0}">` +
+      escapePostitText((a.text as string) ?? '') +
+      '</postit>'
+    )
+  }
   return ''
+}
+
+// El texto del post-it viaja inline en el .md: se escapan los caracteres
+// que romperían la etiqueta y los saltos de línea (el parser va por líneas)
+function escapePostitText(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '&#10;')
+}
+
+function unescapePostitText(text: string): string {
+  return text
+    .replace(/&#10;/g, '\n')
+    .replace(/&gt;/g, '>')
+    .replace(/&lt;/g, '<')
+    .replace(/&amp;/g, '&')
 }
 
 export function parse(md: string): TipTapNode {
@@ -253,7 +295,8 @@ function parseTable(lines: string[]): TipTapNode | null {
 
 function parseInline(text: string): TipTapNode[] {
   const nodes: TipTapNode[] = []
-  const regex = /\$([^$]+)\$|\*\*([^*]+)\*\*|~~([^~]+)~~|<u>([^<]+)<\/u>/g
+  const regex =
+    /\$([^$]+)\$|\*\*([^*]+)\*\*|~~([^~]+)~~|<u>([^<]+)<\/u>|<postit ([^>]*)>(.*?)<\/postit>|<font ([^>]*)>(.*?)<\/font>/g
 
   let lastIndex = 0
   let match: RegExpExecArray | null
@@ -271,6 +314,27 @@ function parseInline(text: string): TipTapNode[] {
       nodes.push({ type: 'text', text: match[3], marks: [{ type: 'strike' }] })
     } else if (match[4] !== undefined) {
       nodes.push({ type: 'text', text: match[4], marks: [{ type: 'underline' }] })
+    } else if (match[5] !== undefined) {
+      nodes.push(parsePostit(match[5], match[6] ?? ''))
+    } else if (match[7] !== undefined) {
+      // El contenido se parsea recursivamente (negrita, fórmulas, etc.) y
+      // los nodos de texto reciben la marca de tipografía/tamaño
+      const attr = (name: string) => {
+        const m = match![7].match(new RegExp(`${name}="([^"]*)"`))
+        return m ? m[1] : undefined
+      }
+      const face = attr('face')
+      const size = parseInt(attr('size') ?? '', 10)
+      const attrs: Record<string, unknown> = {}
+      if (face) attrs.fontFamily = fontById(face)?.stack ?? face
+      if (Number.isFinite(size)) attrs.fontSize = `${size}px`
+      for (const inner of parseInline(match[8] ?? '')) {
+        nodes.push(
+          inner.type === 'text' && Object.keys(attrs).length > 0
+            ? { ...inner, marks: [...(inner.marks ?? []), { type: 'textStyle', attrs }] }
+            : inner
+        )
+      }
     }
 
     lastIndex = regex.lastIndex
@@ -281,4 +345,25 @@ function parseInline(text: string): TipTapNode[] {
   }
 
   return nodes
+}
+
+function parsePostit(attrText: string, content: string): TipTapNode {
+  const attr = (name: string) => {
+    const m = attrText.match(new RegExp(`${name}="([^"]*)"`))
+    return m ? m[1] : undefined
+  }
+  const num = (value: string | undefined, fallback: number) => {
+    const n = Number(value)
+    return Number.isFinite(n) ? n : fallback
+  }
+  return {
+    type: 'postit',
+    attrs: {
+      id: attr('id') ?? '',
+      color: attr('color') ?? 'amarillo',
+      dx: num(attr('dx'), 28),
+      dy: num(attr('dy'), -12),
+      text: unescapePostitText(content),
+    },
+  }
 }
