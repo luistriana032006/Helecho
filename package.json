@@ -2,12 +2,19 @@
   "name": "helecho",
   "version": "1.0.0",
   "description": "Editor de apuntes matemáticos sin LaTeX",
+  "homepage": "https://github.com/luistriana032006/Helecho",
+  "author": {
+    "name": "Luis Triana",
+    "email": "luistriana617@gmail.com"
+  },
   "main": "out/main/index.js",
   "scripts": {
     "dev": "env -u ELECTRON_RUN_AS_NODE electron-vite dev -w -- --no-sandbox",
     "build": "electron-vite build",
     "start": "env -u ELECTRON_RUN_AS_NODE electron --no-sandbox .",
     "package": "npm run build && electron-builder",
+    "package:deb": "npm run build && electron-builder --linux deb",
+    "package:appimage": "npm run build && electron-builder --linux AppImage",
     "lint": "eslint src --ext .ts,.tsx",
     "typecheck": "tsc --noEmit"
   },
@@ -69,9 +76,16 @@
       "output": "release"
     },
     "linux": {
-      "target": "AppImage",
+      "target": [
+        "deb",
+        "AppImage"
+      ],
       "icon": "build/icon.png",
-      "category": "Education"
+      "category": "Education",
+      "maintainer": "Luis Triana <luistriana617@gmail.com>"
+    },
+    "deb": {
+      "afterInstall": "build/deb/after-install.sh"
     },
     "win": {
       "target": "nsis",

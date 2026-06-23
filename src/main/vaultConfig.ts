@@ -38,8 +38,12 @@ export function vaultRoot(): string {
     cachedRoot = config.cuadernillosRoot
     return cachedRoot
   }
-  // Primera ejecución sin config: las instalaciones previas a la bóveda
-  // configurable conservan su carpeta; las nuevas usan ~/Helecho
+  // Primera ejecución sin config. Las instalaciones previas a la bóveda
+  // configurable conservan su carpeta (legacy); las nuevas usan la RAÍZ
+  // personal del usuario (~/Helecho). Se usa app.getPath('home') porque
+  // siempre existe y no depende del nombre traducido de "Documentos"/"Documents"
+  // ni de carpetas del sistema: Linux /home/<user>, Windows C:\Users\<user>,
+  // macOS /Users/<user>.
   const legacy = join(app.getPath('documents'), 'Helecho', 'cuadernillos')
   const chosen = existsSync(legacy) ? legacy : join(app.getPath('home'), 'Helecho')
   writeConfig({ ...config, cuadernillosRoot: chosen })
