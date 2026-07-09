@@ -16,3 +16,7 @@ cuadernillos/
 # apuntes
 /apuntes
 CLAUDE.dev.md
+
+# Claude Code: overrides y temporales locales (settings.json SÍ se versiona)
+.claude/settings.local.json
+.claude/*.tmp.*
