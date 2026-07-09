@@ -2,11 +2,10 @@ import { ipcMain, dialog, shell, BrowserWindow } from 'electron'
 import { mkdir, readdir, readFile, rename, stat, writeFile } from 'fs/promises'
 import { basename, dirname, join, resolve, sep } from 'path'
 import { IPC } from '../../shared/ipcChannels'
-import { scheduleBackup } from '../gitBackup'
 import { vaultRoot, setVaultRoot } from '../vaultConfig'
 import type { MateriaInfo, NotebookList, SearchMatch, SearchResult } from '../../shared/notebookTypes'
 
-// Bóveda configurable (estilo Obsidian) — ver vaultConfig.ts
+// Bóveda configurable — ver vaultConfig.ts
 export function notebooksRoot(): string {
   return vaultRoot()
 }
@@ -51,7 +50,6 @@ export function registerNotebookHandlers() {
       const root = filePaths[0]
       setVaultRoot(root)
       await mkdir(root, { recursive: true })
-      scheduleBackup(root) // la bóveda nueva también recibe el backup Git invisible
       return { success: true, root }
     } catch (err) {
       console.error('vault:select error', err)
@@ -109,7 +107,6 @@ export function registerNotebookHandlers() {
       if (clean) map[materiaName] = clean
       else delete map[materiaName]
       await writeFile(join(root, COLLECTIONS_FILE), JSON.stringify(map, null, 2), 'utf-8')
-      scheduleBackup(root)
       return { success: true }
     } catch (err) {
       console.error('notebook:setCollection error', err)
@@ -122,7 +119,6 @@ export function registerNotebookHandlers() {
       const clean = sanitizeName(name)
       if (!clean) return { success: false }
       await mkdir(join(notebooksRoot(), clean), { recursive: true })
-      scheduleBackup(notebooksRoot())
       return { success: true }
     } catch (err) {
       console.error('notebook:createSubject error', err)
@@ -138,7 +134,6 @@ export function registerNotebookHandlers() {
       const filePath = join(materiaPath, fileName)
       // 'wx' falla si el archivo ya existe — no pisa cuadernillos
       await writeFile(filePath, '', { flag: 'wx' })
-      scheduleBackup(notebooksRoot())
       return { success: true, filePath }
     } catch (err) {
       console.error('notebook:create error', err)
@@ -181,7 +176,6 @@ export function registerNotebookHandlers() {
         }
       }
 
-      scheduleBackup(notebooksRoot())
       return { success: true, newPath }
     } catch (err) {
       console.error('notebook:rename error', err)
@@ -218,7 +212,6 @@ export function registerNotebookHandlers() {
         await writeFile(join(root, COLLECTIONS_FILE), JSON.stringify(map, null, 2), 'utf-8')
       }
 
-      scheduleBackup(root)
       return { success: true }
     } catch (err) {
       console.error('notebook:delete error', err)

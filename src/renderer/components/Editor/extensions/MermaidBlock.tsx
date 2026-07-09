@@ -65,6 +65,14 @@ function MermaidView({ node, updateAttributes, selected }: NodeViewProps) {
       .then(({ svg }) => {
         if (cancelled) return
         target.innerHTML = svg
+        // El SVG se ajusta al ancho del contenedor (columna u hoja): nunca se
+        // desborda y mantiene su proporción. Estilo inline para que aplique
+        // también en el clon del PDF (que no carga el CSS de la app).
+        const el = target.querySelector('svg')
+        if (el) {
+          el.style.maxWidth = '100%'
+          el.style.height = 'auto'
+        }
         setError(null)
       })
       .catch((err: unknown) => {

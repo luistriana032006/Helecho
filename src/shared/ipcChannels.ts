@@ -28,4 +28,8 @@ export const IPC = {
   ALEXANDRIA_ADBLOCK_SET:  'alexandria:adblockSet',
   VAULT_GET:               'vault:get',
   VAULT_SELECT:            'vault:select',
+  UPDATE_AVAILABLE:        'update:available',
+  UPDATE_DOWNLOADED:       'update:downloaded',
+  UPDATE_ERROR:            'update:error',
+  UPDATE_INSTALL:          'update:install',
 } as const

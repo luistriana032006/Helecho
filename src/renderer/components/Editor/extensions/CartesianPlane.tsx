@@ -1,6 +1,7 @@
 import { useId, useRef, useState } from 'react'
 import { Node } from '@tiptap/core'
 import { NodeViewWrapper, ReactNodeViewRenderer, type NodeViewProps } from '@tiptap/react'
+import { useAvailableWidth } from '../../../hooks/useAvailableWidth'
 
 export interface PlaneLine {
   x1: number
@@ -177,6 +178,14 @@ function PlaneView({ node, updateAttributes, selected }: NodeViewProps) {
   const dragState = useRef<{ mode: 'move' | 'rotate'; dx: number; dy: number } | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
 
+  // El plano se ajusta al ancho de su contenedor (columna u hoja). Es cuadrado,
+  // así que el lado renderizado = ancho disponible (topado a SIZE). El viewBox
+  // sigue en SIZE, por lo que el mapeo del clic (proporción de rect) no cambia.
+  const { sentinelRef, availW } = useAvailableWidth(SIZE)
+  // Mínimo bajo (120) para que quepa incluso en 3 columnas (~190px c/u); en
+  // flujo normal queda topado a SIZE.
+  const side = Math.max(120, Math.min(SIZE, Math.round(availW - 20)))
+
   const scale = (SIZE - 2 * PAD) / (2 * range)
   const px = (x: number) => PAD + (x + range) * scale
   const py = (y: number) => SIZE - PAD - (y + range) * scale
@@ -266,10 +275,13 @@ function PlaneView({ node, updateAttributes, selected }: NodeViewProps) {
     <NodeViewWrapper
       as="div"
       contentEditable={false}
-      className={`cartesian-plane my-3 inline-block rounded-lg border bg-white p-2 select-none ${
+      style={{ maxWidth: availW }}
+      className={`cartesian-plane my-3 inline-block max-w-full rounded-lg border bg-white p-2 select-none ${
         selected ? 'border-blue-400 ring-2 ring-blue-200' : 'border-zinc-200'
       }`}
     >
+      {/* Sentinel para medir el ancho del contenedor (columna u hoja) */}
+      <div ref={sentinelRef} style={{ height: 0 }} />
       {/* Controles del plano — se excluyen del PDF */}
       <div className="plane-toolbar mb-1 flex flex-wrap items-center gap-1.5">
         <button
@@ -453,8 +465,8 @@ function PlaneView({ node, updateAttributes, selected }: NodeViewProps) {
 
       <svg
         ref={svgRef}
-        width={SIZE}
-        height={SIZE}
+        width={side}
+        height={side}
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         onClick={onSvgClick}
         onMouseMove={(e) => { if (drawing) setHover(pointFromEvent(e)) }}

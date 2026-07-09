@@ -6,10 +6,41 @@ import { registerFileHandlers } from './ipc/fileHandlers'
 import { registerExportHandlers } from './ipc/exportHandlers'
 import { registerNotebookHandlers } from './ipc/notebookHandlers'
 import { registerWatchHandlers } from './ipc/watchHandlers'
-import { notebooksRoot } from './ipc/notebookHandlers'
-import { runBackup } from './gitBackup'
 import { registerAlexandriaSecurity, hardenWebviews } from './alexandriaSecurity'
 import { registerAdblockHandlers, initAdblock } from './adblocker'
+import { initAutoUpdater } from './autoUpdater'
+
+// Linux: identidad estable de la ventana para que GNOME le ASOCIE el icono.
+// En Linux el icono NO sale del BrowserWindow (se ignora en Wayland/X11) —
+// GNOME cruza el WM_CLASS/app_id de la ventana contra un archivo .desktop
+// instalado. Se fijan ambos a "Helecho" para que casen con el StartupWMClass
+// del .desktop que instala iniciar.sh. En el AppImage empaquetado esto lo
+// resuelve electron-builder; este bloque es para el modo desarrollo.
+if (process.platform === 'linux') {
+  app.setName('Helecho')
+  app.commandLine.appendSwitch('class', 'Helecho')
+  // OJO: app.setName mueve userData a ~/.config/Helecho (mayúscula). En Linux
+  // eso es OTRA carpeta y orfana el perfil entero — sesión de Google de
+  // Alexandria, config de bóveda, ajustes. Se fija userData de vuelta a
+  // ~/.config/helecho (el name del package.json), independiente del nombre
+  // visible que necesita el WM_CLASS del icono.
+  app.setPath('userData', join(app.getPath('appData'), 'helecho'))
+}
+
+// Electron 32 (Chromium 128) lanza esta excepción interna cuando una página
+// crea y destruye iframes a gran velocidad — el cliente web de Zoom lo hace al
+// montar una videollamada. Para cuando un handler interno de WebContents
+// accede al frame, este ya fue destruido. Es benigno (la llamada entra igual),
+// pero sin guard salta el diálogo nativo de error del main y lo interrumpe.
+// Se silencia SOLO ese error conocido; cualquier otro conserva el diálogo de
+// antes para no ocultar fallos reales.
+const DISPOSED_FRAME = 'Render frame was disposed before WebFrameMain could be accessed'
+process.on('uncaughtException', (err) => {
+  const message = err instanceof Error ? err.message : String(err)
+  if (message.includes(DISPOSED_FRAME)) return
+  console.error('Uncaught Exception:', err)
+  dialog.showErrorBox('Uncaught Exception', message)
+})
 
 // Estado de cambios sin guardar, espejado desde el renderer.
 // El main decide el cierre por sí solo: si el renderer no reporta
@@ -107,6 +138,8 @@ function createWindow() {
   } else {
     win.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  return win
 }
 
 app.whenReady().then(() => {
@@ -129,11 +162,9 @@ app.whenReady().then(() => {
     dirtyFileName = fileName
   })
 
-  createWindow()
-
-  // Backup de arranque: captura cambios externos (Claude Code, otros
-  // editores) hechos desde la última sesión
-  void runBackup(notebooksRoot())
+  const mainWindow = createWindow()
+  // Auto-update contra GitHub Releases (solo en la app empaquetada)
+  initAutoUpdater(mainWindow)
 })
 
 app.on('window-all-closed', () => {

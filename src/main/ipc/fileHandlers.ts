@@ -2,8 +2,6 @@ import { ipcMain, dialog, app, BrowserWindow } from 'electron'
 import { readFile, writeFile } from 'fs/promises'
 import { basename } from 'path'
 import { IPC } from '../../shared/ipcChannels'
-import { scheduleBackup } from '../gitBackup'
-import { isInsideRoot, notebooksRoot } from './notebookHandlers'
 import { convertToPdf, OFFICE_EXTENSIONS } from './referenceConvert'
 
 const FILTERS = [
@@ -25,8 +23,6 @@ export function registerFileHandlers() {
         target = chosen
       }
       await writeFile(target, content, 'utf-8')
-      // Backup Git invisible para los guardados dentro de los cuadernillos
-      if (isInsideRoot(target)) scheduleBackup(notebooksRoot())
       return { success: true, filePath: target }
     } catch (err) {
       console.error('file:save error', err)
