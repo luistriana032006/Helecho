@@ -100,7 +100,7 @@ export default function SettingsDialog({ open, onClose, onVaultChanged }: Props)
           Carpeta de cuadernillos
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Tus apuntes viven aquí, fuera del programa (como la bóveda de Obsidian).
+          Tus apuntes viven aquí, fuera del programa, en tu propia carpeta.
           Cambiarla no mueve los archivos existentes.
         </p>
         <div className="mt-2 flex items-center gap-2">

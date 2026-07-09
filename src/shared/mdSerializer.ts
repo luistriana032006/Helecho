@@ -53,6 +53,45 @@ function serializeBlock(node: TipTapNode): string {
         }) +
         '\n```'
       )
+    case 'discreteGraph':
+      return (
+        '```helecho-grafo\n' +
+        JSON.stringify({
+          directed: (node.attrs?.directed as boolean) ?? false,
+          weighted: (node.attrs?.weighted as boolean) ?? false,
+          nodes: (node.attrs?.nodes as unknown[]) ?? [],
+          edges: (node.attrs?.edges as unknown[]) ?? [],
+        }) +
+        '\n```'
+      )
+    case 'columnBlock':
+      // Sección de columnas: nivel de anidación nuevo (columnas → columna →
+      // bloques). El contenido de cada columna se serializa recursivamente.
+      return (
+        '<columnas>\n' +
+        (node.content ?? [])
+          .map(
+            (col) =>
+              '<columna>\n' +
+              (col.content ?? []).map(serializeBlock).filter(Boolean).join('\n\n') +
+              '\n</columna>'
+          )
+          .join('\n') +
+        '\n</columnas>'
+      )
+    case 'plotlyChart':
+      // Se guarda el modelo editable (tipo/título/series) + el snapshot PNG,
+      // así el PDF y la vista previa de carga no dependen de re-renderizar Plotly
+      return (
+        '```helecho-plotly\n' +
+        JSON.stringify({
+          chartType: (node.attrs?.chartType as string) ?? 'bar',
+          title: (node.attrs?.title as string) ?? '',
+          series: (node.attrs?.series as unknown[]) ?? [],
+          png: (node.attrs?.png as string) ?? '',
+        }) +
+        '\n```'
+      )
     default:
       return ''
   }
@@ -128,7 +167,48 @@ function serializeInlineNode(node: TipTapNode): string {
       '</postit>'
     )
   }
+  if (node.type === 'flashcard') {
+    // Tarjeta inline (frente/dorso van como atributos escapados, no como
+    // contenido, porque son dos textos): un solo tag autocontenido en el .md
+    const a = node.attrs ?? {}
+    return (
+      `<tarjeta id="${(a.id as string) ?? ''}" color="${(a.color as string) ?? 'indigo'}" ` +
+      `dx="${(a.dx as number) ?? 28}" dy="${(a.dy as number) ?? 8}" ` +
+      `front="${escapeTarjeta((a.front as string) ?? '')}" back="${escapeTarjeta((a.back as string) ?? '')}"></tarjeta>`
+    )
+  }
+  if (node.type === 'mathTemplate') {
+    // Bloque de función editable: id de plantilla + valores, como JSON
+    // escapado en un solo atributo (los valores pueden traer LaTeX)
+    const a = node.attrs ?? {}
+    const data = JSON.stringify({
+      t: (a.template as string) ?? '',
+      v: (a.values as Record<string, string>) ?? {},
+    })
+    return `<fmath data="${escapeTarjeta(data)}"></fmath>`
+  }
   return ''
+}
+
+// El frente/dorso viajan como atributos del tag <tarjeta>: se escapan también
+// las comillas (los valores de atributo van entre comillas) y los saltos de
+// línea (el parser va por líneas)
+function escapeTarjeta(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/\n/g, '&#10;')
+}
+
+function unescapeTarjeta(text: string): string {
+  return text
+    .replace(/&#10;/g, '\n')
+    .replace(/&quot;/g, '"')
+    .replace(/&gt;/g, '>')
+    .replace(/&lt;/g, '<')
+    .replace(/&amp;/g, '&')
 }
 
 // El texto del post-it viaja inline en el .md: se escapan los caracteres
@@ -191,6 +271,113 @@ export function parse(md: string): TipTapNode {
         content.push({
           type: 'cartesianPlane',
           attrs: { range: data.range ?? 10, lines: data.lines ?? [], curves: data.curves ?? [] },
+        })
+      } catch {
+        // bloque corrupto: se omite en lugar de romper la carga
+      }
+      continue
+    }
+
+    if (line.trim() === '```helecho-grafo') {
+      i++
+      const jsonLines: string[] = []
+      while (i < lines.length && lines[i].trim() !== '```') {
+        jsonLines.push(lines[i])
+        i++
+      }
+      i++ // salta el ``` de cierre
+      try {
+        const data = JSON.parse(jsonLines.join('\n')) as {
+          directed?: boolean
+          weighted?: boolean
+          nodes?: unknown[]
+          edges?: unknown[]
+        }
+        content.push({
+          type: 'discreteGraph',
+          attrs: {
+            directed: data.directed ?? false,
+            weighted: data.weighted ?? false,
+            nodes: data.nodes ?? [],
+            edges: data.edges ?? [],
+          },
+        })
+      } catch {
+        // bloque corrupto: se omite en lugar de romper la carga
+      }
+      continue
+    }
+
+    if (line.trim() === '<columnas>') {
+      i++
+      // Junta todo lo que hay hasta el </columnas> que cierra (con contador de
+      // profundidad por si hubiera columnas anidadas).
+      const inner: string[] = []
+      let depth = 1
+      while (i < lines.length) {
+        const t = lines[i].trim()
+        if (t === '<columnas>') depth++
+        else if (t === '</columnas>') {
+          depth--
+          if (depth === 0) { i++; break }
+        }
+        inner.push(lines[i])
+        i++
+      }
+      // Parte el bloque interno en columnas y parsea cada una recursivamente
+      const columns: TipTapNode[] = []
+      let j = 0
+      while (j < inner.length) {
+        if (inner[j].trim() === '<columna>') {
+          j++
+          const colLines: string[] = []
+          let nested = 0 // columnas anidadas, para no cerrar de más
+          while (j < inner.length) {
+            const t = inner[j].trim()
+            if (t === '<columnas>') nested++
+            else if (t === '</columnas>') nested--
+            else if (t === '</columna>' && nested === 0) { j++; break }
+            colLines.push(inner[j])
+            j++
+          }
+          const colContent = parse(colLines.join('\n')).content ?? []
+          columns.push({
+            type: 'column',
+            content: colContent.length ? colContent : [{ type: 'paragraph' }],
+          })
+        } else {
+          j++
+        }
+      }
+      if (columns.length >= 2) {
+        content.push({ type: 'columnBlock', content: columns.slice(0, 3) })
+      }
+      continue
+    }
+
+    if (line.trim() === '```helecho-plotly') {
+      i++
+      const jsonLines: string[] = []
+      while (i < lines.length && lines[i].trim() !== '```') {
+        jsonLines.push(lines[i])
+        i++
+      }
+      i++ // salta el ``` de cierre
+      try {
+        const data = JSON.parse(jsonLines.join('\n')) as {
+          chartType?: string
+          title?: string
+          series?: unknown[]
+          png?: string
+        }
+        content.push({
+          type: 'plotlyChart',
+          attrs: {
+            chartType: data.chartType ?? 'bar',
+            title: data.title ?? '',
+            series: data.series ?? [],
+            png: data.png ?? '',
+          },
         })
       } catch {
         // bloque corrupto: se omite en lugar de romper la carga
@@ -296,7 +483,7 @@ function parseTable(lines: string[]): TipTapNode | null {
 function parseInline(text: string): TipTapNode[] {
   const nodes: TipTapNode[] = []
   const regex =
-    /\$([^$]+)\$|\*\*([^*]+)\*\*|~~([^~]+)~~|<u>([^<]+)<\/u>|<postit ([^>]*)>(.*?)<\/postit>|<font ([^>]*)>(.*?)<\/font>/g
+    /\$([^$]+)\$|\*\*([^*]+)\*\*|~~([^~]+)~~|<u>([^<]+)<\/u>|<postit ([^>]*)>(.*?)<\/postit>|<font ([^>]*)>(.*?)<\/font>|<tarjeta ([^>]*)><\/tarjeta>|<fmath ([^>]*)><\/fmath>/g
 
   let lastIndex = 0
   let match: RegExpExecArray | null
@@ -335,6 +522,10 @@ function parseInline(text: string): TipTapNode[] {
             : inner
         )
       }
+    } else if (match[9] !== undefined) {
+      nodes.push(parseTarjeta(match[9]))
+    } else if (match[10] !== undefined) {
+      nodes.push(parseFmath(match[10]))
     }
 
     lastIndex = regex.lastIndex
@@ -366,4 +557,42 @@ function parsePostit(attrText: string, content: string): TipTapNode {
       text: unescapePostitText(content),
     },
   }
+}
+
+function parseTarjeta(attrText: string): TipTapNode {
+  const attr = (name: string) => {
+    const m = attrText.match(new RegExp(`${name}="([^"]*)"`))
+    return m ? m[1] : undefined
+  }
+  const num = (value: string | undefined, fallback: number) => {
+    const n = Number(value)
+    return Number.isFinite(n) ? n : fallback
+  }
+  return {
+    type: 'flashcard',
+    attrs: {
+      id: attr('id') ?? '',
+      color: attr('color') ?? 'indigo',
+      front: unescapeTarjeta(attr('front') ?? ''),
+      back: unescapeTarjeta(attr('back') ?? ''),
+      dx: num(attr('dx'), 28),
+      dy: num(attr('dy'), 8),
+    },
+  }
+}
+
+function parseFmath(attrText: string): TipTapNode {
+  const m = attrText.match(/data="([^"]*)"/)
+  let template = ''
+  let values: Record<string, string> = {}
+  if (m) {
+    try {
+      const data = JSON.parse(unescapeTarjeta(m[1])) as { t?: string; v?: Record<string, string> }
+      template = data.t ?? ''
+      values = data.v ?? {}
+    } catch {
+      // bloque corrupto: se omite el contenido pero no rompe la carga
+    }
+  }
+  return { type: 'mathTemplate', attrs: { template, values } }
 }

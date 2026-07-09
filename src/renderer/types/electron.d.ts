@@ -61,6 +61,9 @@ declare global {
       setAdblockEnabled: (enabled: boolean) => Promise<{ success: boolean; error?: string }>
       getVaultRoot: () => Promise<string>
       selectVaultRoot: () => Promise<{ success: boolean; root?: string; canceled?: boolean }>
+      onUpdateAvailable: (callback: (info: { version: string }) => void) => void
+      onUpdateDownloaded: (callback: (info: { version: string }) => void) => void
+      installUpdate: () => void
     }
   }
 }

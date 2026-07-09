@@ -3,6 +3,7 @@ import { useNotebookStore } from '../store/notebookStore'
 import { useSettingsStore } from '../store/settingsStore'
 import { serialize, parse } from '../../shared/mdSerializer'
 import { postitColor } from '../components/Editor/extensions/PostIt'
+import { flashcardColor } from '../components/Editor/extensions/Flashcard'
 
 export function useFileOps(editor: Editor | null) {
   const { filePath, setFilePath, setDirty } = useNotebookStore()
@@ -99,7 +100,48 @@ export function useFileOps(editor: Editor | null) {
     // Quita los elementos de UI (grips de arrastre, espaciadores de
     // paginación) que viven dentro del editor pero no son contenido
     const clone = el.cloneNode(true) as HTMLElement
-    clone.querySelectorAll('.drag-handle, .page-break-spacer, .plane-toolbar, .plane-instruments, .mermaid-toolbar').forEach((n) => n.remove())
+    // Plotly: se quita el gráfico vivo (canvas/WebGL no sobrevive al clonado por
+    // innerHTML) y su barra; queda el <img> PNG (data-URI) que sí sobrevive.
+    clone.querySelectorAll('.drag-handle, .page-break-spacer, .plane-toolbar, .plane-instruments, .mermaid-toolbar, .grafo-toolbar, .math-template-editor, .plotly-live, .plotly-toolbar, .columns-toolbar, .column-del').forEach((n) => n.remove())
+
+    // Tarjetas de repaso: igual que los post-its, la tarjeta se reconstruye
+    // junto a su pin con el mismo desplazamiento (dx, dy) y muestra AMBAS
+    // caras (frente + dorso). Estilos inline porque el print no carga Tailwind.
+    clone.querySelectorAll('[data-type="flashcard"]').forEach((pin) => {
+      const front = pin.getAttribute('data-front') ?? ''
+      const back = pin.getAttribute('data-back') ?? ''
+      const dx = Number(pin.getAttribute('data-dx')) || 0
+      const dy = Number(pin.getAttribute('data-dy')) || 0
+      const col = flashcardColor(pin.getAttribute('data-color') ?? 'indigo')
+      pin.setAttribute(
+        'style',
+        `${pin.getAttribute('style') ?? ''};position:relative;display:inline-block;` +
+          `width:16px;height:11px;border-radius:2px;background:${col.pin};`
+      )
+      const card = document.createElement('span')
+      card.setAttribute(
+        'style',
+        `position:absolute;left:${dx}px;top:${dy}px;width:208px;display:block;` +
+          'border:1px solid #999;border-radius:6px;overflow:hidden;background:#fff;' +
+          'box-shadow:0 1px 3px rgba(0,0,0,0.25);z-index:40;'
+      )
+      const cara = (etiqueta: string, texto: string, fondo: string) => {
+        const wrap = document.createElement('span')
+        wrap.setAttribute('style', `display:block;padding:5px 8px;background:${fondo};`)
+        const lbl = document.createElement('span')
+        lbl.textContent = etiqueta
+        lbl.setAttribute('style', 'display:block;font-size:8px;text-transform:uppercase;letter-spacing:.04em;color:#777;')
+        const txt = document.createElement('span')
+        txt.textContent = texto
+        txt.setAttribute('style', 'display:block;font-size:11px;color:#27272a;white-space:pre-wrap;word-break:break-word;')
+        wrap.appendChild(lbl)
+        wrap.appendChild(txt)
+        return wrap
+      }
+      card.appendChild(cara('Frente', front, col.soft))
+      card.appendChild(cara('Dorso', back, '#ffffff'))
+      pin.appendChild(card)
+    })
 
     // Post-its: opcionales en el PDF (Configuración). Si van, la nota se
     // reconstruye junto a su pin con el mismo desplazamiento que en pantalla

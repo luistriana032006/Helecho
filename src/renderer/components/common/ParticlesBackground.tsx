@@ -2,6 +2,8 @@ import { Particles, ParticlesProvider, useParticlesProvider } from '@tsparticles
 import { loadSlim } from '@tsparticles/slim'
 import type { Engine, ISourceOptions } from '@tsparticles/engine'
 
+// Fondo de partículas de la biblioteca: deriva libre a pantalla completa, con
+// líneas que se enlazan al pasar el mouse.
 const OPTIONS: ISourceOptions = {
   fullScreen: { enable: false },
   background: { color: { value: 'transparent' } },

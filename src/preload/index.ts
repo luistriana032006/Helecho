@@ -92,4 +92,15 @@ contextBridge.exposeInMainWorld('helecho', {
 
   selectVaultRoot: () =>
     ipcRenderer.invoke(IPC.VAULT_SELECT),
+
+  onUpdateAvailable: (callback: (info: { version: string }) => void) => {
+    ipcRenderer.on(IPC.UPDATE_AVAILABLE, (_e, info) => callback(info))
+  },
+
+  onUpdateDownloaded: (callback: (info: { version: string }) => void) => {
+    ipcRenderer.on(IPC.UPDATE_DOWNLOADED, (_e, info) => callback(info))
+  },
+
+  installUpdate: () =>
+    ipcRenderer.send(IPC.UPDATE_INSTALL),
 })

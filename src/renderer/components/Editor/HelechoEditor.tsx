@@ -3,6 +3,8 @@ import { EditorContent } from '@tiptap/react'
 import type { Editor } from '@tiptap/react'
 import Toolbar from './Toolbar'
 import PostItLayer from './PostItLayer'
+import FlashcardLayer from './FlashcardLayer'
+import ReviewMode from './ReviewMode'
 import { PAGE_HEIGHT, PAGE_WIDTH, PAGE_MARGIN } from './pageMetrics'
 import { useSettingsStore } from '../../store/settingsStore'
 
@@ -21,6 +23,7 @@ interface Props {
 export default function HelechoEditor({ editor, fileName, isDirty, onHome, onNew, onOpen, onSave, onExportPdf, onSettings }: Props) {
   const [pageCount, setPageCount] = useState(1)
   const [contentHeight, setContentHeight] = useState(PAGE_HEIGHT)
+  const [reviewOpen, setReviewOpen] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
   const strict = useSettingsStore((s) => s.pageMode) === 'estricta'
   const zoom = useSettingsStore((s) => s.zoom)
@@ -52,9 +55,10 @@ export default function HelechoEditor({ editor, fileName, isDirty, onHome, onNew
       style={{ padding: PAGE_MARGIN }}
     >
       <EditorContent editor={editor} />
-      {/* Post-its flotantes: dentro del contenedor del contenido para
-          compartir coordenadas, zoom y scroll con el texto */}
+      {/* Post-its y tarjetas flotantes: dentro del contenedor del contenido
+          para compartir coordenadas, zoom y scroll con el texto */}
       <PostItLayer editor={editor} />
+      <FlashcardLayer editor={editor} />
     </div>
   )
 
@@ -70,7 +74,12 @@ export default function HelechoEditor({ editor, fileName, isDirty, onHome, onNew
         onSave={onSave}
         onExportPdf={onExportPdf}
         onSettings={onSettings}
+        onReview={() => setReviewOpen(true)}
       />
+
+      {reviewOpen && editor && (
+        <ReviewMode editor={editor} onClose={() => setReviewOpen(false)} />
+      )}
       <div className="flex-1 overflow-auto py-8 bg-[#e7e9e6]">
         {/* Caja exterior con el tamaño YA escalado: así el scroll y el
             centrado funcionan bien a cualquier nivel de zoom */}

@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
 /**
- * Bóveda de cuadernillos configurable (estilo Obsidian): la ruta vive en
+ * Bóveda de cuadernillos configurable: la ruta vive en
  * userData/helecho-config.json — NUNCA dentro de la carpeta del proyecto,
  * para que clonar el repositorio no mezcle código con apuntes personales.
  */

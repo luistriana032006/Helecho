@@ -7,7 +7,7 @@ import type { Node as PMNode } from '@tiptap/pm/model'
 const dragHandleKey = new PluginKey<DecorationSet>('dragHandle')
 
 /**
- * Agarre de arrastre estilo Notion, fijo: cada bloque de primer nivel
+ * Agarre de arrastre fijo: cada bloque de primer nivel
  * tiene un grip (⠿) siempre visible en el margen izquierdo de la hoja.
  * Arrastrarlo mueve el bloque completo; ProseMirror gestiona el soltado
  * y Dropcursor dibuja la línea indicadora.

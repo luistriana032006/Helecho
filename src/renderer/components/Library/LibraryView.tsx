@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Globe, Leaf, Plus, Search, Settings, X, CalendarPlus } from 'lucide-react'
 import type { MateriaInfo, CuadernilloInfo, SearchResult } from '../../../shared/notebookTypes'
 import InlineCreate from '../common/InlineCreate'
-import { ParticlesBackground } from './ParticlesBackground'
+import { ParticlesBackground } from '../common/ParticlesBackground'
 
 interface Props {
   onOpenCuadernillo: (path: string) => void

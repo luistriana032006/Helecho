@@ -58,6 +58,19 @@ const isGoogleHost = (hostname: string): boolean =>
   hostname === 'youtube.com' ||
   hostname.endsWith('.youtube.com')
 
+// Meet es la excepción al disfraz Firefox: su WebRTC sirve la ruta de codecs
+// según el navegador que detecta, y un SDP estilo-Firefox choca contra el
+// motor real (Chromium) → "codec collision" en Opus (payload 111) → la
+// videollamada expulsa al usuario. Necesita identidad Chrome consistente, que
+// es lo que de verdad corre por dentro. El login NO se ve afectado: sigue
+// ocurriendo en accounts.google.com (Firefox), así que el bloqueo de
+// "navegador no seguro" no se reintroduce.
+const isMeetHost = (hostname: string): boolean => hostname === 'meet.google.com'
+
+// El disfraz Firefox aplica a todo el ecosistema Google MENOS Meet.
+const wantsFirefoxUA = (hostname: string): boolean =>
+  isGoogleHost(hostname) && !isMeetHost(hostname)
+
 const isWebUrl = (url: string) =>
   url.startsWith('https://') || url.startsWith('http://')
 
@@ -103,7 +116,7 @@ export function registerAlexandriaSecurity() {
   // accounts.google.com y quita los client hints de Chromium (Firefox no
   // los envía; la mezcla delataría el disfraz)
   ses.webRequest.onBeforeSendHeaders((details, callback) => {
-    if (isGoogleHost(hostnameOf(details.url))) {
+    if (wantsFirefoxUA(hostnameOf(details.url))) {
       details.requestHeaders['User-Agent'] = FIREFOX_USER_AGENT
       for (const header of Object.keys(details.requestHeaders)) {
         if (header.toLowerCase().startsWith('sec-ch-ua')) delete details.requestHeaders[header]
@@ -141,7 +154,7 @@ export function registerAlexandriaSecurity() {
     contents.on('did-start-navigation', (event) => {
       if (!event.isMainFrame || event.isSameDocument) return
       contents.setUserAgent(
-        isGoogleHost(hostnameOf(event.url)) ? FIREFOX_USER_AGENT : ALEXANDRIA_USER_AGENT
+        wantsFirefoxUA(hostnameOf(event.url)) ? FIREFOX_USER_AGENT : ALEXANDRIA_USER_AGENT
       )
     })
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, Globe, Lock, LockOpen, Plus, RotateCw, X } from 'lucide-react'
 import { useAlexandriaStore, searchHistory, type TabEntry } from '../../store/alexandriaStore'
 import ConnectionIndicator, { SLOW_LOAD_MS, type ConnState } from './ConnectionIndicator'
+import { NightSky } from '../common/NightSky'
 
 const SEARCH_URL = 'https://www.google.com/search?q='
 
@@ -405,11 +406,15 @@ export default function AlexandriaBrowser({ active }: BrowserProps) {
           />
         ))}
         {!activeTab.url && !activeRuntime.loading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-sidebar text-muted-foreground pointer-events-none">
-            <Globe className="size-8 opacity-40" aria-hidden />
-            <p className="px-6 text-center text-xs">
-              Escribe una dirección o un término de búsqueda arriba
-            </p>
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            {/* Escena nocturna: vía láctea + estrellas + fugaces + montañas */}
+            <NightSky />
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-foreground/70" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}>
+              <Globe className="size-8 opacity-60" aria-hidden />
+              <p className="px-6 text-center text-xs">
+                Escribe una dirección o un término de búsqueda arriba
+              </p>
+            </div>
           </div>
         )}
       </div>
