@@ -68,9 +68,9 @@ env -u ELECTRON_RUN_AS_NODE DISPLAY=:0 npm run dev -- --no-sandbox
 
 ## Estado del proyecto
 
-- **v1.0.0 publicada** (9 jul 2026) — primera release descargable: editor, Alexandria, panel de referencia, post-its, bloque de herramientas y auto-actualización
 - **V1.5** (10 jun 2026) — editor funcional con símbolos, cuadernillos y exportación PDF
-- **V2** — Alexandria (navegador integrado), panel de referencia con Word/PPT, bloque de herramientas de estudio, empaquetado Linux
+- **V2** (jun–jul 2026) — Alexandria (navegador integrado), panel de referencia con Word/PPT, bloque de herramientas de estudio, empaquetado Linux
+- **v1.0.0 publicada** (9 jul 2026) — primera release descargable, con todo lo de V2 incluido
 
 ---
 
