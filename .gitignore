@@ -13,6 +13,9 @@ cuadernillos/
 *.log
 .DS_Store
 
+# Secretos / tokens locales
+.env
+
 # apuntes
 /apuntes
 CLAUDE.dev.md
