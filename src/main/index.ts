@@ -9,6 +9,7 @@ import { registerWatchHandlers } from './ipc/watchHandlers'
 import { registerAlexandriaSecurity, hardenWebviews } from './alexandriaSecurity'
 import { registerAdblockHandlers, initAdblock } from './adblocker'
 import { initAutoUpdater } from './autoUpdater'
+import { integrateAppImage } from './appImageIntegration'
 
 // Linux: identidad estable de la ventana para que GNOME le ASOCIE el icono.
 // En Linux el icono NO sale del BrowserWindow (se ignora en Wayland/X11) —
@@ -165,6 +166,9 @@ app.whenReady().then(() => {
   const mainWindow = createWindow()
   // Auto-update contra GitHub Releases (solo en la app empaquetada)
   initAutoUpdater(mainWindow)
+  // AppImage: registra icono y entrada de menú en ~/.local/share (solo Linux
+  // corriendo como AppImage; en dev y .deb no hace nada)
+  integrateAppImage()
 })
 
 app.on('window-all-closed', () => {
