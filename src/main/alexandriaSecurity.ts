@@ -1,4 +1,13 @@
-import { app, dialog, session, shell, BrowserWindow, type WebContents } from 'electron'
+import {
+  app,
+  desktopCapturer,
+  dialog,
+  session,
+  shell,
+  webContents,
+  BrowserWindow,
+  type WebContents,
+} from 'electron'
 import { IPC } from '../shared/ipcChannels'
 
 /**
@@ -106,6 +115,29 @@ async function askMediaPermission(wc: WebContents, requestingUrl: string): Promi
   return allowed
 }
 
+// En Wayland el selector de "qué compartir" lo pone el sistema (portal de
+// PipeWire): aparece su diálogo al enumerar las fuentes y devuelve solo lo
+// que el usuario eligió. En X11 no existe ese diálogo.
+const IS_WAYLAND = process.platform === 'linux' && !!process.env['WAYLAND_DISPLAY']
+
+// Sin portal no hay selector del sistema: se ofrece la pantalla completa
+// previa confirmación. Se pregunta SIEMPRE (sin recordar la decisión):
+// compartir pantalla expone todo lo visible, cada llamada merece su "sí".
+async function confirmFullScreenShare(requestingOrigin: string, parent?: BrowserWindow): Promise<boolean> {
+  const owner = parent ?? BrowserWindow.getAllWindows()[0]
+  if (!owner) return false
+  const { response } = await dialog.showMessageBox(owner, {
+    type: 'question',
+    buttons: ['Compartir', 'Cancelar'],
+    defaultId: 1,
+    cancelId: 1,
+    title: 'Compartir pantalla',
+    message: `${requestingOrigin} quiere ver tu pantalla`,
+    detail: 'Se compartirá la pantalla completa mientras dure la llamada.',
+  })
+  return response === 0
+}
+
 export function registerAlexandriaSecurity() {
   const ses = session.fromPartition(ALEXANDRIA_PARTITION)
 
@@ -132,7 +164,45 @@ export function registerAlexandriaSecurity() {
       void askMediaPermission(wc, details.requestingUrl).then(callback)
       return
     }
+    // Compartir pantalla: el consentimiento real lo da el selector de
+    // fuentes (setDisplayMediaRequestHandler) — aquí solo se deja pasar.
+    if (permission === 'display-capture') {
+      callback(true)
+      return
+    }
     callback(false)
+  })
+
+  // getDisplayMedia() — compartir pantalla en videollamadas. Electron no
+  // trae el selector de Chrome: sin este handler la petición se rechaza
+  // siempre. Solo video: el audio 'loopback' no existe en Linux.
+  ses.setDisplayMediaRequestHandler((request, callback) => {
+    void (async () => {
+      try {
+        if (IS_WAYLAND) {
+          // El portal muestra su diálogo durante getSources; el usuario
+          // elige ahí pantalla o ventana (Helecho incluida) o cancela
+          const sources = await desktopCapturer.getSources({ types: ['screen', 'window'] })
+          const chosen = sources[0]
+          callback(chosen ? { video: chosen } : {})
+          return
+        }
+        const sources = await desktopCapturer.getSources({ types: ['screen'] })
+        const screen = sources[0]
+        if (!screen) {
+          callback({})
+          return
+        }
+        const wc = webContents.fromFrame(request.frame)
+        const parent = (wc && BrowserWindow.fromWebContents(wc)) ?? undefined
+        const allowed = await confirmFullScreenShare(request.securityOrigin, parent)
+        callback(allowed ? { video: screen } : {})
+      } catch (err) {
+        // Portal cancelado o captura no disponible: se deniega sin romper
+        if (DEV) console.log('[alexandria] compartir pantalla falló:', err)
+        callback({})
+      }
+    })()
   })
 
   // Descargas permitidas: sin savePath fijado, Electron muestra el diálogo
