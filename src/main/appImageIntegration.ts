@@ -24,12 +24,14 @@ export function integrateAppImage(): void {
     const dataHome = process.env['XDG_DATA_HOME'] || join(homedir(), '.local', 'share')
 
     // ── Icono ─────────────────────────────────────────────────────────────
-    // electron-builder lo empaqueta dentro del AppImage en la ruta hicolor;
-    // se copia a la hicolor del usuario para que el tema de iconos lo resuelva
-    // por nombre ("helecho") desde el .desktop.
-    const iconRelPath = join('icons', 'hicolor', '1024x1024', 'apps', 'helecho.png')
-    const bundledIcon = join(appDir, 'usr', 'share', iconRelPath)
-    const userIcon = join(dataHome, iconRelPath)
+    // electron-builder lo empaqueta dentro del AppImage en hicolor/1024x1024,
+    // pero el index.theme de hicolor solo llega hasta 512x512: un icono en
+    // 1024x1024 es invisible para GNOME (pinta el engrane genérico). Se copia
+    // a 512x512 del usuario — GTK reescala el PNG al cargarlo, no importa que
+    // el archivo mida 1024px — para que el tema lo resuelva por nombre
+    // ("helecho") desde el .desktop.
+    const bundledIcon = join(appDir, 'usr', 'share', 'icons', 'hicolor', '1024x1024', 'apps', 'helecho.png')
+    const userIcon = join(dataHome, 'icons', 'hicolor', '512x512', 'apps', 'helecho.png')
     if (existsSync(bundledIcon) && !existsSync(userIcon)) {
       mkdirSync(dirname(userIcon), { recursive: true })
       copyFileSync(bundledIcon, userIcon)
