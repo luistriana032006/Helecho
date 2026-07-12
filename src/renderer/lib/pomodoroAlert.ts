@@ -6,6 +6,8 @@
  * que el navegador permita reproducir; al terminar la fase ya está activo.
  */
 
+import { useNotificationStore } from '../store/notificationStore'
+
 let audioCtx: AudioContext | null = null
 
 function getCtx(): AudioContext | null {
@@ -61,10 +63,13 @@ function notify(message: string): void {
 
 /** Suena + notifica al terminar una fase. `endedPhase` es la que acaba de cerrar. */
 export function pomodoroPhaseEnded(endedPhase: 'trabajo' | 'descanso'): void {
-  playChime()
-  notify(
+  const message =
     endedPhase === 'trabajo'
       ? '¡Tiempo! Toca un descanso de 5 min.'
       : 'Fin del descanso. De vuelta al trabajo (25 min).'
-  )
+  playChime()
+  notify(message)
+  // También al centro de notificaciones de la app, por si la notificación
+  // del sistema no se vio (permiso denegado, no molestar, etc.)
+  useNotificationStore.getState().push({ id: 'pomodoro', title: 'Pomodoro', body: message })
 }
