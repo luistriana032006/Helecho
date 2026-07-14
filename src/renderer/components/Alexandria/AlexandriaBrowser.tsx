@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Globe, Lock, LockOpen, Plus, RotateCw, X } from 
 import { useAlexandriaStore, searchHistory, type TabEntry } from '../../store/alexandriaStore'
 import ConnectionIndicator, { SLOW_LOAD_MS, type ConnState } from './ConnectionIndicator'
 import { NightSky } from '../common/NightSky'
+import { t, useT } from '../../lib/i18n'
 
 const SEARCH_URL = 'https://www.google.com/search?q='
 
@@ -108,7 +109,7 @@ function TabView({ tab, active, onRuntime, registerWebview }: TabViewProps) {
       // -3 = navegación cancelada por otra navegación: no es un error real
       if (!ev.isMainFrame || ev.errorCode === -3) return
       failedRef.current = true
-      onRuntime(id, { error: `No se pudo cargar la página (${ev.errorDescription})`, conn: 'failed' })
+      onRuntime(id, { error: t('No se pudo cargar la página ({error})', { error: ev.errorDescription }), conn: 'failed' })
     }
     wv.addEventListener('did-navigate', onNavigate)
     wv.addEventListener('did-navigate-in-page', onNavigate)
@@ -158,6 +159,7 @@ interface BrowserProps {
  * entre sesiones); el estado vivo de cada webview es local de este montaje.
  */
 export default function AlexandriaBrowser({ active }: BrowserProps) {
+  const tr = useT()
   const tabs = useAlexandriaStore((s) => s.tabs)
   const activeTabId = useAlexandriaStore((s) => s.activeTabId)
   const setActiveTab = useAlexandriaStore((s) => s.setActiveTab)
@@ -263,20 +265,20 @@ export default function AlexandriaBrowser({ active }: BrowserProps) {
           <div
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            title={tab.title || tab.url || 'Nueva pestaña'}
+            title={tab.title || tab.url || tr('Nueva pestaña')}
             className={`flex h-6 min-w-0 max-w-36 shrink-0 cursor-pointer items-center gap-1 rounded px-2 text-xs transition-colors ${
               tab.id === activeTab.id
                 ? 'bg-muted text-foreground'
                 : 'text-muted-foreground hover:bg-muted/60'
             }`}
           >
-            <span className="truncate">{tab.title || tab.url || 'Nueva pestaña'}</span>
+            <span className="truncate">{tab.title || tab.url || tr('Nueva pestaña')}</span>
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 closeTab(tab.id)
               }}
-              aria-label="Cerrar pestaña (Ctrl+W)"
+              aria-label={tr('Cerrar pestaña (Ctrl+W)')}
               className="flex size-3.5 shrink-0 items-center justify-center rounded-full hover:bg-foreground/10"
             >
               <X className="size-3" aria-hidden />
@@ -285,8 +287,8 @@ export default function AlexandriaBrowser({ active }: BrowserProps) {
         ))}
         <button
           onClick={() => storeAddTab()}
-          aria-label="Nueva pestaña (Ctrl+T)"
-          title="Nueva pestaña (Ctrl+T)"
+          aria-label={tr('Nueva pestaña (Ctrl+T)')}
+          title={tr('Nueva pestaña (Ctrl+T)')}
           className="flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <Plus className="size-3.5" aria-hidden />
@@ -297,7 +299,7 @@ export default function AlexandriaBrowser({ active }: BrowserProps) {
         <button
           onClick={() => activeWebview()?.goBack()}
           disabled={!activeRuntime.canBack}
-          aria-label="Atrás"
+          aria-label={tr('Atrás')}
           className={navBtn}
         >
           <ArrowLeft className="size-4" aria-hidden />
@@ -305,7 +307,7 @@ export default function AlexandriaBrowser({ active }: BrowserProps) {
         <button
           onClick={() => activeWebview()?.goForward()}
           disabled={!activeRuntime.canForward}
-          aria-label="Adelante"
+          aria-label={tr('Adelante')}
           className={navBtn}
         >
           <ArrowRight className="size-4" aria-hidden />
@@ -313,8 +315,8 @@ export default function AlexandriaBrowser({ active }: BrowserProps) {
         <button
           onClick={() => (activeRuntime.loading ? activeWebview()?.stop() : activeWebview()?.reload())}
           disabled={!activeTab.url}
-          aria-label={activeRuntime.loading ? 'Detener' : 'Recargar (F5)'}
-          title={activeRuntime.loading ? 'Detener' : 'Recargar (F5)'}
+          aria-label={tr(activeRuntime.loading ? 'Detener' : 'Recargar (F5)')}
+          title={tr(activeRuntime.loading ? 'Detener' : 'Recargar (F5)')}
           className={navBtn}
         >
           {activeRuntime.loading ? <X className="size-4" aria-hidden /> : <RotateCw className="size-4" aria-hidden />}
@@ -325,12 +327,12 @@ export default function AlexandriaBrowser({ active }: BrowserProps) {
                 inválidos los bloquea Chromium solo y la carga falla) */}
             {activeTab.url && (
               activeTab.url.startsWith('https://') ? (
-                <span title="Conexión segura (HTTPS, cifrada)">
-                  <Lock className="size-3 shrink-0 text-emerald-600" aria-label="Conexión segura" />
+                <span title={tr('Conexión segura (HTTPS, cifrada)')}>
+                  <Lock className="size-3 shrink-0 text-emerald-600" aria-label={tr('Conexión segura')} />
                 </span>
               ) : (
-                <span title="No seguro: la conexión no está cifrada (HTTP)">
-                  <LockOpen className="size-3 shrink-0 text-amber-600" aria-label="Conexión no segura" />
+                <span title={tr('No seguro: la conexión no está cifrada (HTTP)')}>
+                  <LockOpen className="size-3 shrink-0 text-amber-600" aria-label={tr('Conexión no segura')} />
                 </span>
               )
             )}
@@ -347,7 +349,7 @@ export default function AlexandriaBrowser({ active }: BrowserProps) {
                 setShowSuggestions(false)
                 setSelIndex(-1)
               }}
-              placeholder="Dirección o búsqueda…"
+              placeholder={tr('Dirección o búsqueda…')}
               spellCheck={false}
               className="h-full min-w-0 flex-1 bg-transparent text-xs outline-none"
             />
@@ -381,7 +383,7 @@ export default function AlexandriaBrowser({ active }: BrowserProps) {
                 }}
                 className="w-full border-t border-border px-2.5 py-1 text-left text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground"
               >
-                Borrar historial
+                {tr('Borrar historial')}
               </button>
             </div>
           )}
@@ -412,7 +414,7 @@ export default function AlexandriaBrowser({ active }: BrowserProps) {
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-foreground/70" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}>
               <Globe className="size-8 opacity-60" aria-hidden />
               <p className="px-6 text-center text-xs">
-                Escribe una dirección o un término de búsqueda arriba
+                {tr('Escribe una dirección o un término de búsqueda arriba')}
               </p>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
+import { useT } from '../../lib/i18n'
 
 interface Props {
   placeholder: string
@@ -10,7 +11,9 @@ interface Props {
   submitLabel?: string
 }
 
-export default function InlineCreate({ placeholder, onSubmit, onCancel, size = 'md', initialValue = '', submitLabel = 'Crear' }: Props) {
+export default function InlineCreate({ placeholder, onSubmit, onCancel, size = 'md', initialValue = '', submitLabel }: Props) {
+  const t = useT()
+  const label = submitLabel ?? t('Crear')
   const [value, setValue] = useState(initialValue)
   const trimmed = value.trim()
 
@@ -38,15 +41,15 @@ export default function InlineCreate({ placeholder, onSubmit, onCancel, size = '
       <button
         onMouseDown={(e) => { e.preventDefault(); submit() }}
         disabled={!trimmed}
-        title={`${submitLabel} (Enter)`}
+        title={`${label} (Enter)`}
         className={`rounded-md bg-primary font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40
           ${sm ? 'px-2 py-1 text-xs' : 'px-3 py-1.5 text-xs'}`}
       >
-        {submitLabel}
+        {label}
       </button>
       <button
         onMouseDown={(e) => { e.preventDefault(); onCancel() }}
-        title="Cancelar (Esc)"
+        title={t('Cancelar (Esc)')}
         className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
       >
         <X className="size-3.5" aria-hidden />

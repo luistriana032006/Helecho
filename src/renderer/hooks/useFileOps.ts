@@ -4,6 +4,7 @@ import { useSettingsStore } from '../store/settingsStore'
 import { serialize, parse } from '../../shared/mdSerializer'
 import { postitColor } from '../components/Editor/extensions/PostIt'
 import { flashcardColor } from '../components/Editor/extensions/Flashcard'
+import { t } from '../lib/i18n'
 
 export function useFileOps(editor: Editor | null) {
   const { filePath, setFilePath, setDirty } = useNotebookStore()
@@ -138,8 +139,8 @@ export function useFileOps(editor: Editor | null) {
         wrap.appendChild(txt)
         return wrap
       }
-      card.appendChild(cara('Frente', front, col.soft))
-      card.appendChild(cara('Dorso', back, '#ffffff'))
+      card.appendChild(cara(t('Frente'), front, col.soft))
+      card.appendChild(cara(t('Dorso'), back, '#ffffff'))
       pin.appendChild(card)
     })
 

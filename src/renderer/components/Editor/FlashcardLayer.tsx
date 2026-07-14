@@ -3,6 +3,7 @@ import type { Editor } from '@tiptap/react'
 import { Trash2, RefreshCw, Pencil, Check } from 'lucide-react'
 import { useSettingsStore } from '../../store/settingsStore'
 import { flashcardColor, FLASHCARD_COLORS } from './extensions/Flashcard'
+import { useT } from '../../lib/i18n'
 
 const CARD_WIDTH = 208
 
@@ -30,6 +31,7 @@ interface Props {
  * atributos del nodo — la tarjeta viaja en el .md como cualquier contenido.
  */
 export default function FlashcardLayer({ editor }: Props) {
+  const t = useT()
   const zoom = useSettingsStore((s) => s.zoom)
   const [cards, setCards] = useState<CardInfo[]>([])
   const [drag, setDrag] = useState<{ id: string; dx: number; dy: number } | null>(null)
@@ -207,13 +209,13 @@ export default function FlashcardLayer({ editor }: Props) {
               onMouseDown={(e) => startDrag(e, card)}
               className="flex cursor-grab items-center gap-1 px-1.5 py-1 active:cursor-grabbing"
               style={{ backgroundColor: flashcardColor(card.color).soft }}
-              title="Arrastra para mover la tarjeta"
+              title={t('Arrastra para mover la tarjeta')}
             >
               <span
                 className="mr-auto text-[10px] font-semibold uppercase tracking-wide"
                 style={{ color: flashcardColor(card.color).pin }}
               >
-                Tarjeta
+                {t('Tarjeta')}
               </span>
               {!isEditing && (
                 <button
@@ -222,8 +224,8 @@ export default function FlashcardLayer({ editor }: Props) {
                     e.preventDefault()
                     toggleFlip(card.id)
                   }}
-                  aria-label="Voltear"
-                  title="Voltear (frente / dorso)"
+                  aria-label={t('Voltear')}
+                  title={t('Voltear (frente / dorso)')}
                   className="flex size-4 items-center justify-center rounded hover:bg-black/10"
                 >
                   <RefreshCw className="size-3 text-zinc-600" aria-hidden />
@@ -235,8 +237,8 @@ export default function FlashcardLayer({ editor }: Props) {
                   e.preventDefault()
                   setEditingId(isEditing ? null : card.id)
                 }}
-                aria-label={isEditing ? 'Listo' : 'Editar'}
-                title={isEditing ? 'Listo' : 'Editar'}
+                aria-label={t(isEditing ? 'Listo' : 'Editar')}
+                title={t(isEditing ? 'Listo' : 'Editar')}
                 className="flex size-4 items-center justify-center rounded hover:bg-black/10"
               >
                 {isEditing ? (
@@ -251,8 +253,8 @@ export default function FlashcardLayer({ editor }: Props) {
                   e.preventDefault()
                   removeCard(card.id)
                 }}
-                aria-label="Eliminar tarjeta"
-                title="Eliminar tarjeta"
+                aria-label={t('Eliminar tarjeta')}
+                title={t('Eliminar tarjeta')}
                 className="flex size-4 items-center justify-center rounded hover:bg-black/10"
               >
                 <Trash2 className="size-3 text-zinc-700" aria-hidden />
@@ -263,7 +265,7 @@ export default function FlashcardLayer({ editor }: Props) {
               <div className="flex flex-col gap-1 p-1.5">
                 {/* Selector de categoría de color */}
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-zinc-500">Color</span>
+                  <span className="text-[10px] text-zinc-500">{t('Color')}</span>
                   <div className="flex gap-1">
                     {FLASHCARD_COLORS.map((c) => (
                       <button
@@ -273,8 +275,8 @@ export default function FlashcardLayer({ editor }: Props) {
                           e.preventDefault()
                           updateAttrs(card.id, { color: c.id })
                         }}
-                        aria-label={c.label}
-                        title={c.label}
+                        aria-label={t(c.label)}
+                        title={t(c.label)}
                         className={`size-4 rounded-full border transition-transform hover:scale-110 ${
                           card.color === c.id ? 'border-zinc-700 ring-1 ring-zinc-400' : 'border-white/70'
                         }`}
@@ -284,22 +286,22 @@ export default function FlashcardLayer({ editor }: Props) {
                   </div>
                 </div>
                 <label className="text-[10px] text-zinc-500">
-                  Frente
+                  {t('Frente')}
                   <textarea
                     defaultValue={card.front}
                     onBlur={(e) => updateAttrs(card.id, { front: e.target.value })}
                     rows={2}
-                    placeholder="¿Qué es…?"
+                    placeholder={t('¿Qué es…?')}
                     className="mt-0.5 block w-full resize-none rounded border border-zinc-200 bg-zinc-50 px-1.5 py-1 text-xs text-zinc-800 outline-none focus:border-indigo-400"
                   />
                 </label>
                 <label className="text-[10px] text-zinc-500">
-                  Dorso
+                  {t('Dorso')}
                   <textarea
                     defaultValue={card.back}
                     onBlur={(e) => updateAttrs(card.id, { back: e.target.value })}
                     rows={3}
-                    placeholder="La definición o respuesta"
+                    placeholder={t('La definición o respuesta')}
                     className="mt-0.5 block w-full resize-none rounded border border-zinc-200 bg-zinc-50 px-1.5 py-1 text-xs text-zinc-800 outline-none focus:border-indigo-400"
                   />
                 </label>
@@ -307,20 +309,20 @@ export default function FlashcardLayer({ editor }: Props) {
             ) : (
               <button
                 onClick={() => toggleFlip(card.id)}
-                title="Clic para voltear"
+                title={t('Clic para voltear')}
                 className={`block w-full px-3 py-4 text-center transition-colors ${
                   isFlipped ? 'bg-emerald-50' : 'bg-zinc-50 hover:bg-zinc-100'
                 }`}
               >
                 <span className="block text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
-                  {isFlipped ? 'Dorso' : 'Frente'}
+                  {t(isFlipped ? 'Dorso' : 'Frente')}
                 </span>
                 <span
                   className={`mt-1 block whitespace-pre-wrap break-words text-sm ${
                     caraVacia ? 'italic text-zinc-300' : 'text-zinc-800'
                   }`}
                 >
-                  {caraVacia ? (isFlipped ? '(sin definición)' : '(sin concepto)') : cara}
+                  {caraVacia ? t(isFlipped ? '(sin definición)' : '(sin concepto)') : cara}
                 </span>
               </button>
             )}

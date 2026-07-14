@@ -3,6 +3,7 @@ import { Globe, Leaf, Plus, Search, Settings, X, CalendarPlus } from 'lucide-rea
 import type { MateriaInfo, CuadernilloInfo, SearchResult } from '../../../shared/notebookTypes'
 import InlineCreate from '../common/InlineCreate'
 import { ParticlesBackground } from '../common/ParticlesBackground'
+import { useT, dateLocale } from '../../lib/i18n'
 
 interface Props {
   onOpenCuadernillo: (path: string) => void
@@ -15,7 +16,7 @@ interface Props {
 
 function fmtMs(ms: number) {
   if (!ms) return '—'
-  return new Date(ms).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+  return new Date(ms).toLocaleDateString(dateLocale(), { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 /* ── Notebook card ─────────────────────────────────────────────── */
@@ -28,12 +29,13 @@ interface NotebookCardProps {
 }
 
 function NotebookCard({ cuadernillo, onOpen, onDelete, onRename }: NotebookCardProps) {
+  const t = useT()
   return (
     <div className="group relative">
       <button
         type="button"
         onClick={onOpen}
-        aria-label={`Abrir ${cuadernillo.name}`}
+        aria-label={t('Abrir {name}', { name: cuadernillo.name })}
         className="block w-full text-left transition-transform duration-200 hover:-translate-y-1"
       >
         {/* Notebook body */}
@@ -55,7 +57,7 @@ function NotebookCard({ cuadernillo, onOpen, onDelete, onRename }: NotebookCardP
               </span>
             </div>
             <div className="mt-auto flex flex-col gap-0.5 pt-3 text-[10px] leading-tight text-off-white/85">
-              <span>Creado: {fmtMs(cuadernillo.createdMs)}</span>
+              <span>{t('Creado:')} {fmtMs(cuadernillo.createdMs)}</span>
             </div>
           </div>
           {/* Elastic band */}
@@ -68,16 +70,16 @@ function NotebookCard({ cuadernillo, onOpen, onDelete, onRename }: NotebookCardP
         <button
           type="button"
           onClick={onRename}
-          aria-label={`Renombrar ${cuadernillo.name}`}
+          aria-label={t('Renombrar {name}', { name: cuadernillo.name })}
           className="flex size-6 items-center justify-center rounded bg-background/85 text-muted-foreground shadow text-xs hover:text-foreground"
-          title="Renombrar"
+          title={t('Renombrar')}
         >
           ✎
         </button>
         <button
           type="button"
           onClick={onDelete}
-          aria-label={`Eliminar ${cuadernillo.name}`}
+          aria-label={t('Eliminar {name}', { name: cuadernillo.name })}
           className="flex size-6 items-center justify-center rounded bg-background/85 text-muted-foreground shadow hover:text-destructive"
         >
           <X className="size-3.5" aria-hidden />
@@ -108,6 +110,7 @@ interface SubjectSectionProps {
 }
 
 function SubjectSection(props: SubjectSectionProps) {
+  const t = useT()
   const { materia } = props
   const count = materia.cuadernillos.length
 
@@ -118,7 +121,7 @@ function SubjectSection(props: SubjectSectionProps) {
           <div className="w-64">
             <InlineCreate
               size="sm"
-              placeholder="Nuevo nombre…"
+              placeholder={t('Nuevo nombre…')}
               initialValue={materia.name}
               submitLabel="OK"
               onSubmit={(value) => props.onRenameCuadernillo(materia.path, value)}
@@ -129,7 +132,7 @@ function SubjectSection(props: SubjectSectionProps) {
           <>
             <h3 className="text-base font-medium">{materia.name}</h3>
             <span className="text-xs text-muted-foreground">
-              {count} cuadernillo{count === 1 ? '' : 's'}
+              {t(count === 1 ? '{n} cuadernillo' : '{n} cuadernillos', { n: count })}
             </span>
             <div className="flex items-center gap-3 text-xs">
               <button
@@ -138,7 +141,7 @@ function SubjectSection(props: SubjectSectionProps) {
                 className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
               >
                 <CalendarPlus className="size-3.5" aria-hidden />
-                {materia.coleccion ? 'cambiar semestre' : 'asignar semestre'}
+                {t(materia.coleccion ? 'cambiar semestre' : 'asignar semestre')}
               </button>
               {materia.coleccion && (
                 <button
@@ -146,7 +149,7 @@ function SubjectSection(props: SubjectSectionProps) {
                   onClick={props.onRemoveSemester}
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  quitar
+                  {t('quitar')}
                 </button>
               )}
               <button
@@ -154,14 +157,14 @@ function SubjectSection(props: SubjectSectionProps) {
                 onClick={props.onStartRenameMateria}
                 className="text-muted-foreground hover:text-foreground"
               >
-                renombrar
+                {t('renombrar')}
               </button>
               <button
                 type="button"
                 onClick={() => props.onDeleteMateria(materia.path, materia.name)}
                 className="text-muted-foreground hover:text-destructive"
               >
-                eliminar
+                {t('eliminar')}
               </button>
             </div>
           </>
@@ -174,7 +177,7 @@ function SubjectSection(props: SubjectSectionProps) {
             <div key={c.path} className="flex aspect-[3/4] items-center justify-center rounded-lg border border-border bg-card p-3">
               <InlineCreate
                 size="sm"
-                placeholder="Nuevo nombre…"
+                placeholder={t('Nuevo nombre…')}
                 initialValue={c.name}
                 submitLabel="OK"
                 onSubmit={(value) => props.onRenameCuadernillo(c.path, value)}
@@ -195,7 +198,7 @@ function SubjectSection(props: SubjectSectionProps) {
         {props.addingIn === materia.path ? (
           <div className="col-span-2 rounded-lg border border-dashed border-border bg-card p-3 sm:col-span-3 md:col-span-4 xl:col-span-5">
             <InlineCreate
-              placeholder="Nombre del cuadernillo"
+              placeholder={t('Nombre del cuadernillo')}
               onSubmit={props.onCreateCuadernillo}
               onCancel={props.onCancelCreate}
             />
@@ -206,7 +209,7 @@ function SubjectSection(props: SubjectSectionProps) {
             onClick={props.onStartCreate}
             className="flex aspect-[3/4] flex-col items-center justify-center gap-1 rounded-r-lg rounded-l-sm border-2 border-dashed border-border text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
           >
-            <Plus className="size-6" aria-hidden /> Nuevo cuadernillo
+            <Plus className="size-6" aria-hidden /> {t('Nuevo cuadernillo')}
           </button>
         )}
       </div>
@@ -217,6 +220,7 @@ function SubjectSection(props: SubjectSectionProps) {
 /* ── Library view ──────────────────────────────────────────────── */
 
 export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, onSettings, onAlexandria }: Props) {
+  const t = useT()
   const [materias, setMaterias] = useState<MateriaInfo[]>([])
   const [loaded, setLoaded] = useState(false)
   const [addingMateria, setAddingMateria] = useState(false)
@@ -242,7 +246,7 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
       setMaterias(list.materias)
     } catch (err) {
       console.error('Error al listar cuadernillos', err)
-      window.alert('No se pudo leer la carpeta de cuadernillos. Reinicia la aplicación.')
+      window.alert(t('No se pudo leer la carpeta de cuadernillos. Reinicia la aplicación.'))
     }
     setLoaded(true)
   }, [])
@@ -254,10 +258,10 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
     try {
       const res = await window.helecho.createSubject(name)
       if (res.success) await refresh()
-      else window.alert('No se pudo crear la materia.')
+      else window.alert(t('No se pudo crear la materia.'))
     } catch (err) {
       console.error('Error al crear materia', err)
-      window.alert('No se pudo crear la materia. Reinicia la aplicación.')
+      window.alert(t('No se pudo crear la materia. Reinicia la aplicación.'))
     }
   }
 
@@ -268,13 +272,13 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
       if (res.success && res.filePath) {
         onOpenCuadernillo(res.filePath)
       } else if (res.error === 'exists') {
-        window.alert('Ya existe un cuadernillo con ese nombre en la materia.')
+        window.alert(t('Ya existe un cuadernillo con ese nombre en la materia.'))
       } else {
-        window.alert('No se pudo crear el cuadernillo.')
+        window.alert(t('No se pudo crear el cuadernillo.'))
       }
     } catch (err) {
       console.error('Error al crear cuadernillo', err)
-      window.alert('No se pudo crear el cuadernillo. Reinicia la aplicación.')
+      window.alert(t('No se pudo crear el cuadernillo. Reinicia la aplicación.'))
     }
   }
 
@@ -283,10 +287,10 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
     try {
       const res = await window.helecho.setMateriaCollection(materiaName, coleccion)
       if (res.success) await refresh()
-      else window.alert('No se pudo guardar la colección.')
+      else window.alert(t('No se pudo guardar la colección.'))
     } catch (err) {
       console.error('Error al asignar colección', err)
-      window.alert('No se pudo guardar la colección.')
+      window.alert(t('No se pudo guardar la colección.'))
     }
   }
 
@@ -298,13 +302,13 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
         if (res.newPath !== path) onRenamed?.(path, res.newPath)
         await refresh()
       } else if (res.error === 'exists') {
-        window.alert('Ya existe algo con ese nombre.')
+        window.alert(t('Ya existe algo con ese nombre.'))
       } else {
-        window.alert('No se pudo renombrar.')
+        window.alert(t('No se pudo renombrar.'))
       }
     } catch (err) {
       console.error('Error al renombrar', err)
-      window.alert('No se pudo renombrar.')
+      window.alert(t('No se pudo renombrar.'))
     }
   }
 
@@ -315,11 +319,11 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
         onDeleted?.(path)
         await refresh()
       } else if (!res.canceled) {
-        window.alert('No se pudo eliminar.')
+        window.alert(t('No se pudo eliminar.'))
       }
     } catch (err) {
       console.error('Error al eliminar', err)
-      window.alert('No se pudo eliminar.')
+      window.alert(t('No se pudo eliminar.'))
     }
   }
 
@@ -371,13 +375,13 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
             <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
               <Leaf className="size-6 text-primary" aria-hidden /> Helecho
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">Tus cuadernillos de apuntes</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t('Tus cuadernillos de apuntes')}</p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {addingMateria ? (
               <div className="w-80">
                 <InlineCreate
-                  placeholder="Nombre de la materia…"
+                  placeholder={t('Nombre de la materia…')}
                   onSubmit={createMateria}
                   onCancel={() => setAddingMateria(false)}
                 />
@@ -388,15 +392,15 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
                 onClick={() => setAddingMateria(true)}
                 className="flex h-9 shrink-0 items-center gap-1.5 rounded-md bg-primary px-3.5 text-sm font-medium text-primary-foreground hover:opacity-90"
               >
-                <Plus className="size-4" aria-hidden /> Nueva materia
+                <Plus className="size-4" aria-hidden /> {t('Nueva materia')}
               </button>
             )}
             {onAlexandria && (
               <button
                 type="button"
                 onClick={onAlexandria}
-                title="Alexandria — navegador"
-                aria-label="Alexandria — navegador"
+                title={t('Alexandria — navegador')}
+                aria-label={t('Alexandria — navegador')}
                 className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <Globe className="size-4" aria-hidden />
@@ -406,8 +410,8 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
               <button
                 type="button"
                 onClick={onSettings}
-                title="Configuración"
-                aria-label="Configuración"
+                title={t('Configuración')}
+                aria-label={t('Configuración')}
                 className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <Settings className="size-4" aria-hidden />
@@ -426,14 +430,14 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Escape') setQuery('') }}
-            placeholder="Buscar en todos los cuadernillos…"
+            placeholder={t('Buscar en todos los cuadernillos…')}
             className="h-11 w-full rounded-lg border border-input bg-card px-4 pl-10 pr-10 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery('')}
-              aria-label="Limpiar búsqueda"
+              aria-label={t('Limpiar búsqueda')}
               className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               <X className="size-4" aria-hidden />
@@ -446,7 +450,7 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
           <div className="mt-4 rounded-lg border border-border bg-card p-3">
             <InlineCreate
               size="sm"
-              placeholder="Semestre… (ej. 2026-1)"
+              placeholder={t('Semestre… (ej. 2026-1)')}
               onSubmit={(value) => assignCollection(assigning, value)}
               onCancel={() => setAssigning(null)}
             />
@@ -457,11 +461,11 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
         {results !== null ? (
           <section className="mt-6 flex flex-col gap-3">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              {results.length} resultado{results.length === 1 ? '' : 's'}
+              {t(results.length === 1 ? '{n} resultado' : '{n} resultados', { n: results.length })}
             </p>
             {results.length === 0 && (
               <p className="rounded-lg border border-border bg-card p-6 text-center text-sm text-muted-foreground">
-                Sin coincidencias para &ldquo;{query.trim()}&rdquo;.
+                {t('Sin coincidencias para “{query}”.', { query: query.trim() })}
               </p>
             )}
             {results.map((r) => (
@@ -497,14 +501,14 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
           <div className="mt-16 flex flex-col items-center gap-3 text-center">
             <Leaf className="size-10 text-primary/60" aria-hidden />
             <p className="text-sm text-muted-foreground">
-              Aún no tienes materias. Crea la primera para empezar a tomar apuntes.
+              {t('Aún no tienes materias. Crea la primera para empezar a tomar apuntes.')}
             </p>
             <button
               type="button"
               onClick={() => setAddingMateria(true)}
               className="flex h-9 items-center gap-1.5 rounded-md bg-primary px-3.5 text-sm font-medium text-primary-foreground hover:opacity-90"
             >
-              <Plus className="size-4" aria-hidden /> Nueva materia
+              <Plus className="size-4" aria-hidden /> {t('Nueva materia')}
             </button>
           </div>
 
@@ -525,7 +529,7 @@ export default function LibraryView({ onOpenCuadernillo, onDeleted, onRenamed, o
             {grouped.sin.length > 0 && grouped.named.length > 0 && (
               <div>
                 <h2 className="mb-4 text-lg font-semibold tracking-tight text-muted-foreground">
-                  Sin colección
+                  {t('Sin colección')}
                 </h2>
                 <div className="flex flex-col gap-8">
                   {grouped.sin.map(renderMateria)}

@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import { DEFAULT_UI_COLOR, DEFAULT_TEXT_COLOR } from '../lib/theme'
 
 export type PageMode = 'estricta' | 'fluido'
+export type Language = 'es' | 'en'
 
 // Límites de los paneles redimensionables
 export const SIDEBAR_MIN = 180
@@ -37,6 +38,8 @@ interface SettingsState {
   uiColor: string
   /** Color de los textos de la interfaz (hex) — blanco por defecto */
   textColor: string
+  /** Idioma de la interfaz */
+  language: Language
   setPageMode: (mode: PageMode) => void
   setSidebarWidth: (width: number) => void
   setSymbolsWidth: (width: number) => void
@@ -48,6 +51,7 @@ interface SettingsState {
   setUiColor: (hex: string) => void
   setTextColor: (hex: string) => void
   resetColors: () => void
+  setLanguage: (lang: Language) => void
 }
 
 const clamp = (value: number, min: number, max: number) =>
@@ -66,6 +70,7 @@ export const useSettingsStore = create<SettingsState>()(
       zoom: 1,
       uiColor: DEFAULT_UI_COLOR,
       textColor: DEFAULT_TEXT_COLOR,
+      language: 'es',
       setPageMode: (mode) => set({ pageMode: mode }),
       setSidebarWidth: (width) => set({ sidebarWidth: clamp(width, SIDEBAR_MIN, SIDEBAR_MAX) }),
       setSymbolsWidth: (width) => set({ symbolsWidth: clamp(width, SYMBOLS_MIN, SYMBOLS_MAX) }),
@@ -78,6 +83,7 @@ export const useSettingsStore = create<SettingsState>()(
       setUiColor: (hex) => set({ uiColor: hex }),
       setTextColor: (hex) => set({ textColor: hex }),
       resetColors: () => set({ uiColor: DEFAULT_UI_COLOR, textColor: DEFAULT_TEXT_COLOR }),
+      setLanguage: (lang) => set({ language: lang }),
     }),
     { name: 'helecho-settings' }
   )

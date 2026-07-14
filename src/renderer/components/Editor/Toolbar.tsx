@@ -9,6 +9,7 @@ import FileMenu from '../Layout/FileMenu'
 import { useSettingsStore } from '../../store/settingsStore'
 import { EDITOR_FONTS, fontByStack, fontById } from '../../../shared/fonts'
 import { alertDialog } from '../../lib/confirmDialog'
+import { useT } from '../../lib/i18n'
 
 /** ¿El cursor está dentro de una sección de columnas? */
 function isInColumn(editor: Editor): boolean {
@@ -23,6 +24,7 @@ function isInColumn(editor: Editor): boolean {
 /** Selector de tipografía por selección (estilo Word). Vacío = la fuente
  *  por defecto del editor; cada opción se previsualiza con su propia pila. */
 function FontSelect({ editor }: { editor: Editor }) {
+  const t = useT()
   const currentStack = (editor.getAttributes('textStyle').fontFamily as string | undefined) ?? ''
   const currentId = currentStack ? fontByStack(currentStack)?.id ?? '' : ''
   return (
@@ -34,11 +36,11 @@ function FontSelect({ editor }: { editor: Editor }) {
         if (font) editor.chain().focus().setFontFamily(font.stack).run()
         else editor.chain().focus().unsetFontFamily().run()
       }}
-      title="Tipografía del texto seleccionado"
-      aria-label="Tipografía"
+      title={t('Tipografía del texto seleccionado')}
+      aria-label={t('Tipografía')}
       className="h-7 max-w-36 rounded border border-border bg-background px-1 text-xs outline-none hover:bg-muted"
     >
-      <option value="">Predeterminada</option>
+      <option value="">{t('Predeterminada')}</option>
       {EDITOR_FONTS.map((f) => (
         <option key={f.id} value={f.id} style={{ fontFamily: f.stack }}>
           {f.label}
@@ -52,6 +54,7 @@ const FONT_SIZES = [10, 12, 14, 16, 18, 20, 24, 28, 32, 40]
 
 /** Tamaño del texto seleccionado, en px. Vacío = tamaño por defecto. */
 function FontSizeSelect({ editor }: { editor: Editor }) {
+  const t = useT()
   const raw = (editor.getAttributes('textStyle').fontSize as string | undefined) ?? ''
   const current = raw ? String(parseInt(raw, 10)) : ''
   return (
@@ -62,11 +65,11 @@ function FontSizeSelect({ editor }: { editor: Editor }) {
         if (e.target.value) editor.chain().focus().setFontSize(`${e.target.value}px`).run()
         else editor.chain().focus().unsetFontSize().run()
       }}
-      title="Tamaño del texto seleccionado"
-      aria-label="Tamaño de texto"
+      title={t('Tamaño del texto seleccionado')}
+      aria-label={t('Tamaño de texto')}
       className="h-7 rounded border border-border bg-background px-1 text-xs outline-none hover:bg-muted"
     >
-      <option value="">Tamaño</option>
+      <option value="">{t('Tamaño')}</option>
       {FONT_SIZES.map((s) => (
         <option key={s} value={s}>
           {s}
@@ -81,11 +84,12 @@ const btnActive = `${btn} bg-muted text-foreground`
 const sep = <span className="mx-1 h-5 w-px bg-border" />
 
 function ZoomControl() {
+  const t = useT()
   const zoom = useSettingsStore((s) => s.zoom)
   const setZoom = useSettingsStore((s) => s.setZoom)
   return (
     <div className="ml-auto flex items-center gap-1.5">
-      <button type="button" className={btn} onClick={() => setZoom(zoom - 0.1)} aria-label="Alejar (Ctrl+−)">
+      <button type="button" className={btn} onClick={() => setZoom(zoom - 0.1)} aria-label={t('Alejar (Ctrl+−)')}>
         <Minus className="size-4" aria-hidden />
       </button>
       <input
@@ -98,7 +102,7 @@ function ZoomControl() {
         className="h-1 w-28 accent-primary"
         aria-label="Zoom"
       />
-      <button type="button" className={btn} onClick={() => setZoom(zoom + 0.1)} aria-label="Acercar (Ctrl++)">
+      <button type="button" className={btn} onClick={() => setZoom(zoom + 0.1)} aria-label={t('Acercar (Ctrl++)')}>
         <Plus className="size-4" aria-hidden />
       </button>
       <button
@@ -126,6 +130,7 @@ interface ToolbarProps {
 }
 
 export default function Toolbar({ editor, fileName, isDirty, onHome, onNew, onOpen, onSave, onExportPdf, onSettings, onReview }: ToolbarProps) {
+  const t = useT()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function insertImageFromFile(file: File) {
@@ -145,7 +150,7 @@ export default function Toolbar({ editor, fileName, isDirty, onHome, onNew, onOp
         onClick={onHome}
         className="flex h-7 items-center gap-1 rounded px-2 text-sm hover:bg-muted"
       >
-        <ArrowLeft className="size-4" aria-hidden /> Inicio
+        <ArrowLeft className="size-4" aria-hidden /> {t('Inicio')}
       </button>
 
       <FileMenu
@@ -159,7 +164,7 @@ export default function Toolbar({ editor, fileName, isDirty, onHome, onNew, onOp
 
       <div className="flex items-center gap-1.5 px-2 text-sm">
         <span className="truncate text-muted-foreground">{fileName}</span>
-        {isDirty && <span className="size-1.5 rounded-full bg-primary" aria-label="Cambios sin guardar" />}
+        {isDirty && <span className="size-1.5 rounded-full bg-primary" aria-label={t('Cambios sin guardar')} />}
       </div>
 
       {sep}
@@ -211,7 +216,7 @@ export default function Toolbar({ editor, fileName, isDirty, onHome, onNew, onOp
             type="button"
             className={editor.isActive('bulletList') ? btnActive : btn}
             onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBulletList().run() }}
-            aria-label="Lista de viñetas"
+            aria-label={t('Lista de viñetas')}
           >
             <List className="size-4" aria-hidden />
           </button>
@@ -219,7 +224,7 @@ export default function Toolbar({ editor, fileName, isDirty, onHome, onNew, onOp
             type="button"
             className={editor.isActive('orderedList') ? btnActive : btn}
             onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleOrderedList().run() }}
-            aria-label="Lista numerada"
+            aria-label={t('Lista numerada')}
           >
             <ListOrdered className="size-4" aria-hidden />
           </button>
@@ -234,25 +239,25 @@ export default function Toolbar({ editor, fileName, isDirty, onHome, onNew, onOp
             className={`${btn} gap-1 px-2`}
             onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().insertContent({ type: 'cartesianPlane' }).run() }}
           >
-            <LineChart className="size-4" aria-hidden /> Plano
+            <LineChart className="size-4" aria-hidden /> {t('Plano')}
           </button>
 
           <button
             type="button"
             className={`${btn} gap-1 px-2`}
             onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().insertContent({ type: 'mermaidBlock' }).run() }}
-            title="Insertar diagrama Mermaid (flujo, secuencia, estados)"
+            title={t('Insertar diagrama Mermaid (flujo, secuencia, estados)')}
           >
-            <GitBranch className="size-4" aria-hidden /> Diagrama
+            <GitBranch className="size-4" aria-hidden /> {t('Diagrama')}
           </button>
 
           <button
             type="button"
             className={`${btn} gap-1 px-2`}
             onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().insertContent({ type: 'discreteGraph' }).run() }}
-            title="Insertar grafo de Discreta (nodos y aristas, 2D)"
+            title={t('Insertar grafo de Discreta (nodos y aristas, 2D)')}
           >
-            <Share2 className="size-4" aria-hidden /> Grafo
+            <Share2 className="size-4" aria-hidden /> {t('Grafo')}
           </button>
 
           <button
@@ -264,15 +269,15 @@ export default function Toolbar({ editor, fileName, isDirty, onHome, onNew, onOp
               // render disparaba un bucle de medición). Aviso y no se inserta.
               if (isInColumn(editor)) {
                 void alertDialog(
-                  'Por ahora las gráficas no se pueden colocar dentro de columnas.\n\nInsértala fuera de la sección de columnas.'
+                  t('Por ahora las gráficas no se pueden colocar dentro de columnas.\n\nInsértala fuera de la sección de columnas.')
                 )
                 return
               }
               editor.chain().focus().insertContent({ type: 'plotlyChart' }).run()
             }}
-            title="Insertar gráfica de datos editable (barras, líneas, dispersión, pastel)"
+            title={t('Insertar gráfica de datos editable (barras, líneas, dispersión, pastel)')}
           >
-            <BarChart3 className="size-4" aria-hidden /> Gráfica
+            <BarChart3 className="size-4" aria-hidden /> {t('Gráfica')}
           </button>
 
           <button
@@ -294,9 +299,9 @@ export default function Toolbar({ editor, fileName, isDirty, onHome, onNew, onOp
                 { type: 'paragraph' },
               ]).run()
             }}
-            title="Insertar columnas (2 o 3) — el texto y las gráficas se acomodan dentro de cada columna"
+            title={t('Insertar columnas (2 o 3) — el texto y las gráficas se acomodan dentro de cada columna')}
           >
-            <Columns3 className="size-4" aria-hidden /> Columnas
+            <Columns3 className="size-4" aria-hidden /> {t('Columnas')}
           </button>
 
           <button
@@ -309,7 +314,7 @@ export default function Toolbar({ editor, fileName, isDirty, onHome, onNew, onOp
                 { type: 'text', text: ' ' },
               ]).run()
             }}
-            title="Post-it anclado al punto del texto donde está el cursor"
+            title={t('Post-it anclado al punto del texto donde está el cursor')}
           >
             <StickyNote className="size-4" aria-hidden /> Post-it
           </button>
@@ -324,27 +329,27 @@ export default function Toolbar({ editor, fileName, isDirty, onHome, onNew, onOp
                 { type: 'text', text: ' ' },
               ]).run()
             }}
-            title="Tarjeta de repaso anclada al texto, arrastrable sobre la hoja"
+            title={t('Tarjeta de repaso anclada al texto, arrastrable sobre la hoja')}
           >
-            <Layers className="size-4" aria-hidden /> Tarjeta
+            <Layers className="size-4" aria-hidden /> {t('Tarjeta')}
           </button>
 
           <button
             type="button"
             className={`${btn} gap-1 px-2`}
             onMouseDown={(e) => { e.preventDefault(); onReview() }}
-            title="Repasar todas las tarjetas del cuadernillo (barajadas)"
+            title={t('Repasar todas las tarjetas del cuadernillo (barajadas)')}
           >
-            <GraduationCap className="size-4" aria-hidden /> Repasar
+            <GraduationCap className="size-4" aria-hidden /> {t('Repasar')}
           </button>
 
           <button
             type="button"
             className={`${btn} gap-1 px-2`}
             onMouseDown={(e) => { e.preventDefault(); fileInputRef.current?.click() }}
-            title="Insertar imagen desde archivo"
+            title={t('Insertar imagen desde archivo')}
           >
-            <ImageIcon className="size-4" aria-hidden /> Imagen
+            <ImageIcon className="size-4" aria-hidden /> {t('Imagen')}
           </button>
           <input
             ref={fileInputRef}

@@ -5,12 +5,14 @@ import { useSettingsStore } from '../../store/settingsStore'
 import type { MateriaInfo } from '../../../shared/notebookTypes'
 import InlineCreate from '../common/InlineCreate'
 import ResizeHandle from '../common/ResizeHandle'
+import { useT } from '../../lib/i18n'
 
 interface Props {
   onOpenFile: (path: string) => void
 }
 
 export default function NotebookSidebar({ onOpenFile }: Props) {
+  const t = useT()
   const [collapsed, setCollapsed] = useState(false)
   const [materias, setMaterias] = useState<MateriaInfo[]>([])
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
@@ -48,10 +50,10 @@ export default function NotebookSidebar({ onOpenFile }: Props) {
     try {
       const res = await window.helecho.createSubject(name)
       if (res.success) await refresh()
-      else window.alert('No se pudo crear la materia.')
+      else window.alert(t('No se pudo crear la materia.'))
     } catch (err) {
       console.error('Error al crear materia', err)
-      window.alert('No se pudo crear la materia. Reinicia la aplicación.')
+      window.alert(t('No se pudo crear la materia. Reinicia la aplicación.'))
     }
   }
 
@@ -64,13 +66,13 @@ export default function NotebookSidebar({ onOpenFile }: Props) {
         setExpanded((prev) => new Set(prev).add(materiaPath))
         onOpenFile(res.filePath)
       } else if (res.error === 'exists') {
-        window.alert('Ya existe un cuadernillo con ese nombre en la materia.')
+        window.alert(t('Ya existe un cuadernillo con ese nombre en la materia.'))
       } else {
-        window.alert('No se pudo crear el cuadernillo.')
+        window.alert(t('No se pudo crear el cuadernillo.'))
       }
     } catch (err) {
       console.error('Error al crear cuadernillo', err)
-      window.alert('No se pudo crear el cuadernillo. Reinicia la aplicación.')
+      window.alert(t('No se pudo crear el cuadernillo. Reinicia la aplicación.'))
     }
   }
 
@@ -79,7 +81,7 @@ export default function NotebookSidebar({ onOpenFile }: Props) {
       <aside className="flex w-10 shrink-0 flex-col items-center gap-2 bg-sidebar border-r border-sidebar-border py-3 text-muted-foreground">
         <button
           onMouseDown={(e) => { e.preventDefault(); setCollapsed(false) }}
-          aria-label="Expandir panel de cuadernillos"
+          aria-label={t('Expandir panel de cuadernillos')}
           className="flex flex-col items-center gap-2 rounded p-1 hover:bg-muted hover:text-foreground transition-colors"
         >
           <ChevronsRight className="size-3.5" aria-hidden />
@@ -97,11 +99,11 @@ export default function NotebookSidebar({ onOpenFile }: Props) {
 
       <div className="flex items-center justify-between px-3 py-2 border-b border-sidebar-border">
         <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Cuadernillos
+          {t('Cuadernillos')}
         </span>
         <button
           onMouseDown={(e) => { e.preventDefault(); setCollapsed(true) }}
-          aria-label="Plegar panel"
+          aria-label={t('Plegar panel')}
           className="flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <ChevronsLeft className="size-4" aria-hidden />
@@ -130,8 +132,8 @@ export default function NotebookSidebar({ onOpenFile }: Props) {
                     setExpanded((p) => new Set(p).add(materia.path))
                     setAddingIn(materia.path)
                   }}
-                  title={`Nuevo cuadernillo en ${materia.name}`}
-                  aria-label={`Nuevo cuadernillo en ${materia.name}`}
+                  title={t('Nuevo cuadernillo en {name}', { name: materia.name })}
+                  aria-label={t('Nuevo cuadernillo en {name}', { name: materia.name })}
                   className="flex size-6 items-center justify-center rounded text-muted-foreground opacity-0 hover:bg-muted hover:text-foreground group-hover/subject:opacity-100"
                 >
                   <Plus className="size-4" aria-hidden />
@@ -155,13 +157,13 @@ export default function NotebookSidebar({ onOpenFile }: Props) {
                     </button>
                   ))}
                   {materia.cuadernillos.length === 0 && addingIn !== materia.path && (
-                    <p className="py-1 pl-7 pr-2 text-xs italic text-muted-foreground">Vacía</p>
+                    <p className="py-1 pl-7 pr-2 text-xs italic text-muted-foreground">{t('Vacía')}</p>
                   )}
                   {addingIn === materia.path && (
                     <div className="px-2 py-1.5 pl-7">
                       <InlineCreate
                         size="sm"
-                        placeholder="Cuadernillo"
+                        placeholder={t('Cuadernillo')}
                         onSubmit={(name) => createCuadernillo(materia.path, name)}
                         onCancel={() => setAddingIn(null)}
                       />
@@ -175,7 +177,7 @@ export default function NotebookSidebar({ onOpenFile }: Props) {
 
         {materias.length === 0 && !addingMateria && (
           <p className="px-3 py-3 text-xs text-muted-foreground">
-            Sin materias aún. Crea la primera abajo.
+            {t('Sin materias aún. Crea la primera abajo.')}
           </p>
         )}
 
@@ -183,7 +185,7 @@ export default function NotebookSidebar({ onOpenFile }: Props) {
           <div className="px-2 py-1">
             <InlineCreate
               size="sm"
-              placeholder="Nombre de la materia…"
+              placeholder={t('Nombre de la materia…')}
               onSubmit={createMateria}
               onCancel={() => setAddingMateria(false)}
             />
@@ -196,7 +198,7 @@ export default function NotebookSidebar({ onOpenFile }: Props) {
           onClick={() => setAddingMateria(true)}
           className="flex w-full items-center justify-center gap-1 rounded-md border border-dashed border-border py-1.5 text-xs text-muted-foreground hover:border-ring hover:text-foreground"
         >
-          <Plus className="size-3.5" aria-hidden /> Nueva materia
+          <Plus className="size-3.5" aria-hidden /> {t('Nueva materia')}
         </button>
       </div>
     </aside>

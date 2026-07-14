@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Editor } from '@tiptap/react'
 import { X, ChevronLeft, ChevronRight, Shuffle, GraduationCap } from 'lucide-react'
 import { flashcardColor } from './extensions/Flashcard'
+import { useT } from '../../lib/i18n'
 
 interface Card {
   front: string
@@ -40,6 +41,7 @@ function shuffle<T>(arr: T[]): T[] {
  * (voltear con clic/espacio, ◀ ▶ o flechas, 🔀 para rebarajar, Esc cierra).
  */
 export default function ReviewMode({ editor, onClose }: { editor: Editor; onClose: () => void }) {
+  const t = useT()
   // Se recolectan y barajan una sola vez al abrir (editor es estable)
   const initial = useMemo(() => shuffle(collectCards(editor)), [editor])
   const [order, setOrder] = useState<Card[]>(initial)
@@ -90,10 +92,10 @@ export default function ReviewMode({ editor, onClose }: { editor: Editor; onClos
       >
         <div className="flex items-center gap-2">
           <GraduationCap className="size-4 text-zinc-500" aria-hidden />
-          <span className="text-sm font-semibold text-zinc-700">Repasar</span>
+          <span className="text-sm font-semibold text-zinc-700">{t('Repasar')}</span>
           <button
             onClick={onClose}
-            aria-label="Cerrar repaso"
+            aria-label={t('Cerrar repaso')}
             className="ml-auto flex size-7 items-center justify-center rounded text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
           >
             <X className="size-4" aria-hidden />
@@ -102,9 +104,9 @@ export default function ReviewMode({ editor, onClose }: { editor: Editor; onClos
 
         {total === 0 ? (
           <p className="py-8 text-center text-sm text-zinc-500">
-            Este cuadernillo no tiene tarjetas todavía.
+            {t('Este cuadernillo no tiene tarjetas todavía.')}
             <br />
-            Insértalas con el botón <span className="font-medium">"Tarjeta"</span> de la barra.
+            {t('Insértalas con el botón')} <span className="font-medium">"{t('Tarjeta')}"</span> {t('de la barra.')}
           </p>
         ) : (
           <>
@@ -124,18 +126,18 @@ export default function ReviewMode({ editor, onClose }: { editor: Editor; onClos
                     aria-hidden
                   />
                 )}
-                {flipped ? 'Dorso' : 'Frente'}
+                {t(flipped ? 'Dorso' : 'Frente')}
               </span>
               <span className={`text-lg ${caraVacia ? 'italic text-zinc-300' : 'text-zinc-800'}`}>
-                {caraVacia ? '(vacío)' : cara}
+                {caraVacia ? t('(vacío)') : cara}
               </span>
-              <span className="mt-2 text-[11px] text-zinc-300">clic o espacio para voltear</span>
+              <span className="mt-2 text-[11px] text-zinc-300">{t('clic o espacio para voltear')}</span>
             </button>
 
             <div className="flex items-center justify-center gap-3">
               <button
                 onClick={() => go(-1)}
-                aria-label="Anterior"
+                aria-label={t('Anterior')}
                 className="flex size-8 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 hover:bg-zinc-100"
               >
                 <ChevronLeft className="size-4" aria-hidden />
@@ -145,7 +147,7 @@ export default function ReviewMode({ editor, onClose }: { editor: Editor; onClos
               </span>
               <button
                 onClick={() => go(1)}
-                aria-label="Siguiente"
+                aria-label={t('Siguiente')}
                 className="flex size-8 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 hover:bg-zinc-100"
               >
                 <ChevronRight className="size-4" aria-hidden />
@@ -154,7 +156,7 @@ export default function ReviewMode({ editor, onClose }: { editor: Editor; onClos
                 onClick={reshuffle}
                 className="ml-2 flex items-center gap-1 rounded-md border border-zinc-200 px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100"
               >
-                <Shuffle className="size-3.5" aria-hidden /> Barajar
+                <Shuffle className="size-3.5" aria-hidden /> {t('Barajar')}
               </button>
             </div>
           </>

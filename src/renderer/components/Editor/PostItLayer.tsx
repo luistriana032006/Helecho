@@ -3,6 +3,7 @@ import type { Editor } from '@tiptap/react'
 import { Trash2 } from 'lucide-react'
 import { POSTIT_COLORS, postitColor } from './extensions/PostIt'
 import { useSettingsStore } from '../../store/settingsStore'
+import { useT } from '../../lib/i18n'
 
 const NOTE_WIDTH = 176
 
@@ -29,6 +30,7 @@ interface Props {
  * atributos del nodo — el post-it viaja en el .md como cualquier contenido.
  */
 export default function PostItLayer({ editor }: Props) {
+  const t = useT()
   const zoom = useSettingsStore((s) => s.zoom)
   const [notes, setNotes] = useState<NoteInfo[]>([])
   // Durante el arrastre el desplazamiento es visual; se confirma al soltar
@@ -204,7 +206,7 @@ export default function PostItLayer({ editor }: Props) {
               onMouseDown={(e) => startDrag(e, note)}
               className="flex cursor-grab items-center gap-1 rounded-t-sm px-1.5 py-1 active:cursor-grabbing"
               style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}
-              title="Arrastra para mover el post-it"
+              title={t('Arrastra para mover el post-it')}
             >
               {POSTIT_COLORS.map((c) => (
                 <button
@@ -214,8 +216,8 @@ export default function PostItLayer({ editor }: Props) {
                     e.preventDefault()
                     updateAttrs(note.id, { color: c.id })
                   }}
-                  title={c.label}
-                  aria-label={`Categoría ${c.label.toLowerCase()}`}
+                  title={t(c.label)}
+                  aria-label={t('Categoría {label}', { label: t(c.label).toLowerCase() })}
                   className={`size-3 rounded-full border ${
                     c.id === note.color ? 'border-black/50' : 'border-black/10'
                   }`}
@@ -228,8 +230,8 @@ export default function PostItLayer({ editor }: Props) {
                   e.preventDefault()
                   removeNote(note.id)
                 }}
-                aria-label="Eliminar post-it"
-                title="Eliminar post-it"
+                aria-label={t('Eliminar post-it')}
+                title={t('Eliminar post-it')}
                 className="ml-auto flex size-4 items-center justify-center rounded hover:bg-black/10"
               >
                 <Trash2 className="size-3 text-zinc-700" aria-hidden />
@@ -249,16 +251,16 @@ export default function PostItLayer({ editor }: Props) {
                   if (e.key === 'Escape') (e.target as HTMLTextAreaElement).blur()
                 }}
                 rows={3}
-                placeholder="Escribe la nota…"
+                placeholder={t('Escribe la nota…')}
                 className="block w-full resize-none bg-transparent px-2 py-1.5 text-xs text-zinc-800 outline-none placeholder:text-zinc-500"
               />
             ) : (
               <button
                 onClick={() => setEditingId(note.id)}
-                title="Clic para editar"
+                title={t('Clic para editar')}
                 className="block w-full whitespace-pre-wrap break-words px-2 py-1.5 text-left text-xs text-zinc-800"
               >
-                {note.text || <span className="text-zinc-500">Escribe la nota…</span>}
+                {note.text || <span className="text-zinc-500">{t('Escribe la nota…')}</span>}
               </button>
             )}
           </div>
