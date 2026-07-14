@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Bell, Trash2, X } from 'lucide-react'
 import { useNotificationStore } from '../../store/notificationStore'
+import { useT } from '../../lib/i18n'
 
 function timeAgo(time: number): string {
   const min = Math.round((Date.now() - time) / 60000)
@@ -16,6 +17,7 @@ function timeAgo(time: number): string {
 // para aplicar una actualización descargada). Va montado en main.tsx, fuera
 // de App, para estar presente en todas las vistas.
 export default function NotificationCenter() {
+  const t = useT()
   const { notifications, open, push, dismiss, clearAll, setOpen } = useNotificationStore()
 
   // Fuente: auto-update. El main avisa cuando ya descargó una versión nueva;
@@ -41,12 +43,12 @@ export default function NotificationCenter() {
       {open && (
         <div className="w-80 overflow-hidden rounded-xl border border-border bg-background shadow-2xl">
           <div className="flex items-center justify-between border-b border-border px-3 py-2">
-            <p className="text-sm font-medium text-foreground">Notificaciones</p>
+            <p className="text-sm font-medium text-foreground">{t('Notificaciones')}</p>
             <button
               type="button"
               onClick={clearAll}
-              title="Limpiar todas"
-              aria-label="Limpiar todas"
+              title={t('Limpiar')}
+              aria-label={t('Limpiar')}
               className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               <Trash2 className="size-4" aria-hidden />
@@ -72,8 +74,8 @@ export default function NotificationCenter() {
                 <button
                   type="button"
                   onClick={() => dismiss(n.id)}
-                  title="Descartar"
-                  aria-label="Descartar"
+                  title={t('Descartar')}
+                  aria-label={t('Descartar')}
                   className="shrink-0 rounded-md p-1 text-muted-foreground opacity-0 transition hover:bg-muted hover:text-foreground group-hover:opacity-100"
                 >
                   <X className="size-3.5" aria-hidden />
@@ -87,7 +89,7 @@ export default function NotificationCenter() {
         type="button"
         onClick={() => setOpen(!open)}
         title="Notificaciones"
-        aria-label="Notificaciones"
+        aria-label={t('Notificaciones')}
         className="relative flex size-11 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-2xl transition hover:text-foreground"
       >
         <Bell className="size-5" aria-hidden />

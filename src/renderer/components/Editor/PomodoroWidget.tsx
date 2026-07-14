@@ -1,5 +1,6 @@
 import { Play, Pause, RotateCcw, SkipForward, Timer } from 'lucide-react'
 import { usePomodoroStore } from '../../store/pomodoroStore'
+import { useT } from '../../lib/i18n'
 
 function format(total: number): string {
   const m = Math.floor(total / 60)
@@ -14,6 +15,7 @@ function format(total: number): string {
  * selectores zustand).
  */
 export default function PomodoroWidget() {
+  const t = useT()
   const phase = usePomodoroStore((s) => s.phase)
   const running = usePomodoroStore((s) => s.running)
   const secondsLeft = usePomodoroStore((s) => s.secondsLeft)
@@ -43,7 +45,7 @@ export default function PomodoroWidget() {
         type="button"
         onClick={() => (running ? pause() : start())}
         className={iconBtn}
-        aria-label={running ? 'Pausar' : 'Iniciar'}
+        aria-label={running ? t('Pausar') : t('Iniciar')}
       >
         {running ? <Pause className="size-3.5" aria-hidden /> : <Play className="size-3.5" aria-hidden />}
       </button>

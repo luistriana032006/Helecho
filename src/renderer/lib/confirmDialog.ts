@@ -1,3 +1,5 @@
+import { t } from './i18n'
+
 /**
  * Diálogo de confirmación propio (sí/no) que se monta en `document.body`.
  *
@@ -26,7 +28,7 @@ export function confirmDialog(message: string, confirmLabel = 'Eliminar'): Promi
     const no = document.createElement('button')
     no.type = 'button'
     no.className = 'helecho-confirm-no'
-    no.textContent = 'Cancelar'
+    no.textContent = t('Cancelar')
 
     const yes = document.createElement('button')
     yes.type = 'button'
@@ -77,7 +79,7 @@ export function alertDialog(message: string): Promise<void> {
     const ok = document.createElement('button')
     ok.type = 'button'
     ok.className = 'helecho-confirm-no'
-    ok.textContent = 'Entendido'
+    ok.textContent = t('Entendido')
 
     actions.appendChild(ok)
     box.append(text, actions)

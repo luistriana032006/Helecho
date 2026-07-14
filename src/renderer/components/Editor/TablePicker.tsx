@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Editor } from '@tiptap/react'
+import { useT } from '../../lib/i18n'
 
 const MAX_ROWS = 8
 const MAX_COLS = 8
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function TablePicker({ editor }: Props) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [hover, setHover] = useState({ rows: 0, cols: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
@@ -34,7 +36,7 @@ export default function TablePicker({ editor }: Props) {
     <div ref={containerRef} className="relative">
       <button
         onMouseDown={(e) => { e.preventDefault(); setOpen((v) => !v) }}
-        title="Insertar tabla"
+        title={t('Insertar tabla')}
         className={`flex h-7 items-center rounded px-2 text-sm transition-colors
           ${open ? 'bg-muted text-foreground' : 'hover:bg-muted text-foreground/70'}`}
       >

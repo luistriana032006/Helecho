@@ -210,6 +210,41 @@ const EN: Record<string, string> = {
   'Índigo': 'Indigo',
   'Ámbar': 'Amber',
   'Cian': 'Cyan',
+
+  // ── Editor: Calculadora y Pomodoro ──
+  'Calculadora': 'Calculator',
+  'Ingresa un número': 'Enter a number',
+  'Borrar': 'Clear',
+  'Borrar todo': 'Clear all',
+  'Pomodoro': 'Pomodoro',
+  'Iniciar': 'Start',
+  'Pausar': 'Pause',
+  'Reanudar': 'Resume',
+  'Reiniciar': 'Reset',
+
+  // ── Tablas ──
+  'Insertar tabla': 'Insert table',
+  'Filas': 'Rows',
+  'Agregar fila arriba': 'Add row above',
+  'Agregar fila abajo': 'Add row below',
+  'Agregar columna': 'Add column',
+  'Eliminar fila': 'Delete row',
+  'Eliminar columna': 'Delete column',
+  'Eliminar tabla': 'Delete table',
+  'OK': 'OK',
+
+  // ── Notificaciones y diálogos ──
+  'Notificaciones': 'Notifications',
+  'Sin notificaciones': 'No notifications',
+  'Limpiar': 'Clear',
+  'No guardar': 'Don\'t save',
+  'Pomodoro completado': 'Pomodoro completed',
+  '¡Toma un descanso!': 'Take a break!',
+  'Cancelar': 'Cancel',
+  'Entendido': 'Got it',
+  '¡Tiempo! Toca un descanso de 5 min.': 'Time\'s up! Take a 5 min break.',
+  'Fin del descanso. De vuelta al trabajo (25 min).': 'Break is over. Back to work (25 min).',
+  'Descartar': 'Dismiss',
 }
 
 export function t(text: string, vars?: Record<string, string | number>): string {

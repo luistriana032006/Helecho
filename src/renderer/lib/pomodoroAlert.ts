@@ -7,6 +7,7 @@
  */
 
 import { useNotificationStore } from '../store/notificationStore'
+import { t } from './i18n'
 
 let audioCtx: AudioContext | null = null
 
@@ -65,8 +66,8 @@ function notify(message: string): void {
 export function pomodoroPhaseEnded(endedPhase: 'trabajo' | 'descanso'): void {
   const message =
     endedPhase === 'trabajo'
-      ? '¡Tiempo! Toca un descanso de 5 min.'
-      : 'Fin del descanso. De vuelta al trabajo (25 min).'
+      ? t('¡Tiempo! Toca un descanso de 5 min.')
+      : t('Fin del descanso. De vuelta al trabajo (25 min).')
   playChime()
   notify(message)
   // También al centro de notificaciones de la app, por si la notificación
