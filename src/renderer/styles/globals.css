@@ -217,7 +217,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background-color: rgba(45, 198, 83, 0.2);
+  background-color: rgb(var(--primary) / 0.2);
   pointer-events: none;
 }
 

@@ -3,6 +3,7 @@ import { useEditor } from './hooks/useEditor'
 import { useFileOps } from './hooks/useFileOps'
 import { useNotebookStore } from './store/notebookStore'
 import { useSettingsStore } from './store/settingsStore'
+import { applyTheme } from './lib/theme'
 import HelechoEditor from './components/Editor/HelechoEditor'
 import SymbolMenu from './components/SymbolMenu/SymbolMenu'
 import SettingsDialog from './components/Settings/SettingsDialog'
@@ -27,6 +28,14 @@ export default function App() {
   // Cambia con cada cambio de bóveda: remonta la biblioteca para que liste
   // la carpeta nueva aunque ya estuviera visible
   const [vaultEpoch, setVaultEpoch] = useState(0)
+
+  // Colores personalizados de la UI: se aplican al arrancar y en vivo
+  // mientras se arrastra la ruedita en Configuración
+  const uiColor = useSettingsStore((s) => s.uiColor)
+  const textColor = useSettingsStore((s) => s.textColor)
+  useEffect(() => {
+    applyTheme(uiColor, textColor)
+  }, [uiColor, textColor])
 
   const openFromLibrary = async (path: string) => {
     await openPath(path)

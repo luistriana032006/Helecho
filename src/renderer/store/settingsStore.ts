@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { DEFAULT_UI_COLOR, DEFAULT_TEXT_COLOR } from '../lib/theme'
 
 export type PageMode = 'estricta' | 'fluido'
 
@@ -32,6 +33,10 @@ interface SettingsState {
   /** Incluir los post-its al exportar el PDF del apunte */
   postitsInPdf: boolean
   zoom: number
+  /** Color base de la interfaz (hex) — toda la paleta rota hacia su matiz */
+  uiColor: string
+  /** Color de los textos de la interfaz (hex) — blanco por defecto */
+  textColor: string
   setPageMode: (mode: PageMode) => void
   setSidebarWidth: (width: number) => void
   setSymbolsWidth: (width: number) => void
@@ -40,6 +45,9 @@ interface SettingsState {
   setReferenceLastPath: (path: string | null) => void
   setPostitsInPdf: (value: boolean) => void
   setZoom: (zoom: number) => void
+  setUiColor: (hex: string) => void
+  setTextColor: (hex: string) => void
+  resetColors: () => void
 }
 
 const clamp = (value: number, min: number, max: number) =>
@@ -56,6 +64,8 @@ export const useSettingsStore = create<SettingsState>()(
       referenceLastPath: null,
       postitsInPdf: true,
       zoom: 1,
+      uiColor: DEFAULT_UI_COLOR,
+      textColor: DEFAULT_TEXT_COLOR,
       setPageMode: (mode) => set({ pageMode: mode }),
       setSidebarWidth: (width) => set({ sidebarWidth: clamp(width, SIDEBAR_MIN, SIDEBAR_MAX) }),
       setSymbolsWidth: (width) => set({ symbolsWidth: clamp(width, SYMBOLS_MIN, SYMBOLS_MAX) }),
@@ -65,6 +75,9 @@ export const useSettingsStore = create<SettingsState>()(
       setPostitsInPdf: (value) => set({ postitsInPdf: value }),
       // Redondea a pasos de 10% para evitar valores como 0.7000000000000001
       setZoom: (zoom) => set({ zoom: Math.round(clamp(zoom, ZOOM_MIN, ZOOM_MAX) * 10) / 10 }),
+      setUiColor: (hex) => set({ uiColor: hex }),
+      setTextColor: (hex) => set({ textColor: hex }),
+      resetColors: () => set({ uiColor: DEFAULT_UI_COLOR, textColor: DEFAULT_TEXT_COLOR }),
     }),
     { name: 'helecho-settings' }
   )

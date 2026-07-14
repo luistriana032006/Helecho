@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { FolderOpen } from 'lucide-react'
+import { FolderOpen, RotateCcw } from 'lucide-react'
 import { useSettingsStore } from '../../store/settingsStore'
 import type { PageMode } from '../../store/settingsStore'
+import { DEFAULT_UI_COLOR, DEFAULT_TEXT_COLOR } from '../../lib/theme'
+import ColorWheel from '../common/ColorWheel'
 
 interface Props {
   open: boolean
@@ -28,6 +30,12 @@ export default function SettingsDialog({ open, onClose, onVaultChanged }: Props)
   const setPageMode = useSettingsStore((s) => s.setPageMode)
   const postitsInPdf = useSettingsStore((s) => s.postitsInPdf)
   const setPostitsInPdf = useSettingsStore((s) => s.setPostitsInPdf)
+  const uiColor = useSettingsStore((s) => s.uiColor)
+  const setUiColor = useSettingsStore((s) => s.setUiColor)
+  const textColor = useSettingsStore((s) => s.textColor)
+  const setTextColor = useSettingsStore((s) => s.setTextColor)
+  const resetColors = useSettingsStore((s) => s.resetColors)
+  const colorsChanged = uiColor !== DEFAULT_UI_COLOR || textColor !== DEFAULT_TEXT_COLOR
   const [vaultRoot, setVaultRoot] = useState('')
   const [adblock, setAdblock] = useState(false)
   const [adblockBusy, setAdblockBusy] = useState(false)
@@ -72,7 +80,7 @@ export default function SettingsDialog({ open, onClose, onVaultChanged }: Props)
       onMouseDown={onClose}
     >
       <div
-        className="w-full max-w-md rounded-xl border border-border bg-popover p-5 shadow-2xl"
+        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-border bg-popover p-5 shadow-2xl"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-semibold">Configuración</h2>
@@ -96,6 +104,58 @@ export default function SettingsDialog({ open, onClose, onVaultChanged }: Props)
             </button>
           ))}
         </div>
+        <div className="mt-5 flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Apariencia
+          </p>
+          {colorsChanged && (
+            <button
+              type="button"
+              onClick={resetColors}
+              className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-muted"
+            >
+              <RotateCcw className="size-3" aria-hidden /> Restablecer
+            </button>
+          )}
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Elige el color de toda la interfaz y el de sus textos. La barra bajo
+          cada rueda controla el brillo — llévala a la izquierda para tonos
+          oscuros o negro. Los cambios se ven al instante.
+        </p>
+        <div className="mt-3 flex items-start justify-around gap-4">
+          <div className="flex flex-col items-center gap-2">
+            <ColorWheel
+              value={uiColor}
+              onChange={setUiColor}
+              aria-label="Color de la interfaz"
+            />
+            <div className="flex items-center gap-1.5">
+              <span
+                className="size-3 rounded-full border border-border"
+                style={{ backgroundColor: uiColor }}
+                aria-hidden
+              />
+              <p className="text-xs text-muted-foreground">Interfaz</p>
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <ColorWheel
+              value={textColor}
+              onChange={setTextColor}
+              aria-label="Color de los textos"
+            />
+            <div className="flex items-center gap-1.5">
+              <span
+                className="size-3 rounded-full border border-border"
+                style={{ backgroundColor: textColor }}
+                aria-hidden
+              />
+              <p className="text-xs text-muted-foreground">Textos</p>
+            </div>
+          </div>
+        </div>
+
         <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Carpeta de cuadernillos
         </p>
