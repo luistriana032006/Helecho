@@ -2,6 +2,7 @@ import { app } from 'electron'
 import { execFile } from 'child_process'
 import { createHash } from 'crypto'
 import { promises as fsp } from 'fs'
+import { homedir } from 'os'
 import { basename, join } from 'path'
 import { pathToFileURL } from 'url'
 
@@ -27,7 +28,13 @@ const SOFFICE_CANDIDATES =
         'C:\\Program Files (x86)\\LibreOffice\\program\\soffice.exe',
       ]
     : process.platform === 'darwin'
-      ? ['/Applications/LibreOffice.app/Contents/MacOS/soffice', 'soffice']
+      ? [
+          '/Applications/LibreOffice.app/Contents/MacOS/soffice',
+          join(homedir(), 'Applications/LibreOffice.app/Contents/MacOS/soffice'),
+          '/opt/homebrew/bin/soffice',
+          '/usr/local/bin/soffice',
+          'soffice',
+        ]
       : ['soffice', 'libreoffice']
 
 let sofficeBin: string | null | undefined

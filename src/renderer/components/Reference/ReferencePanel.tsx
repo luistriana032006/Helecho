@@ -192,7 +192,7 @@ export default function ReferencePanel() {
             tenerlo al lado mientras tomas apuntes.
           </p>
           <p className="text-xs text-muted-foreground/70">
-            Selecciona texto o celdas, copia con Ctrl+C y pega directo en tu cuadernillo.
+            Selecciona texto o celdas, copia con Ctrl/Cmd+C y pega directo en tu cuadernillo.
             Word y PowerPoint se muestran como PDF (vía LibreOffice).
           </p>
           <button

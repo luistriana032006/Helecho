@@ -16,6 +16,8 @@
     "package:deb": "npm run build && electron-builder --linux deb",
     "package:appimage": "npm run build && electron-builder --linux AppImage",
     "package:linux": "build/publish-linux.sh",
+    "package:mac": "npm run build && electron-builder --mac --universal --publish never",
+    "publish:mac": "npm run build && electron-builder --mac --universal --publish always",
     "lint": "eslint src --ext .ts,.tsx",
     "typecheck": "tsc --noEmit"
   },
@@ -107,9 +109,18 @@
       "icon": "build/icon.png"
     },
     "mac": {
-      "target": "dmg",
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "icon": "build/icon.png",
-      "category": "public.app-category.education"
+      "category": "public.app-category.education",
+      "hardenedRuntime": true,
+      "notarize": true,
+      "extendInfo": {
+        "NSCameraUsageDescription": "Helecho permite que los sitios de videollamadas abiertos en Alexandria usen la cámara después de pedirte permiso.",
+        "NSMicrophoneUsageDescription": "Helecho permite que los sitios de videollamadas abiertos en Alexandria usen el micrófono después de pedirte permiso."
+      }
     }
   }
 }

@@ -64,6 +64,27 @@ Los paneles funcionan de forma independiente dentro de una misma ventana, permit
 env -u ELECTRON_RUN_AS_NODE DISPLAY=:0 npm run dev -- --no-sandbox
 ```
 
+## Empaquetado para macOS
+
+El instalador debe generarse en un Mac con Xcode Command Line Tools. El build crea
+un DMG universal para instalación y un ZIP requerido por la auto-actualización:
+
+```bash
+npm ci --legacy-peer-deps
+npm run package:mac
+```
+
+Los artefactos quedan en `release/`. Un build local sin certificado se puede
+probar en el mismo Mac, pero para distribuirlo sin advertencias de Gatekeeper se
+necesita una membresía de Apple Developer, un certificado `Developer ID
+Application` y credenciales de notarización. `electron-builder` usa las
+variables `CSC_LINK`, `CSC_KEY_PASSWORD`, `APPLE_ID`,
+`APPLE_APP_SPECIFIC_PASSWORD` y `APPLE_TEAM_ID`; no se guardan secretos en el
+repositorio. Con ellas configuradas, `npm run publish:mac` firma, notariza y
+publica el DMG, el ZIP y `latest-mac.yml` en GitHub Releases.
+
+La visualización de Word y PowerPoint requiere LibreOffice instalado en macOS.
+
 ---
 
 ## Estado del proyecto

@@ -49,16 +49,16 @@ export default function FileMenu({ onHome, onNew, onOpen, onSave, onExportPdf, o
           </button>
           <div className="my-1 h-px bg-border" />
           <button type="button" className={ITEM} onClick={run(onNew)}>
-            {t('Nuevo cuadernillo')} <span className="text-xs text-muted-foreground">Ctrl+N</span>
+            {t('Nuevo cuadernillo')} <span className="text-xs text-muted-foreground">Ctrl/Cmd+N</span>
           </button>
           <button type="button" className={ITEM} onClick={run(onOpen)}>
-            {t('Abrir…')} <span className="text-xs text-muted-foreground">Ctrl+O</span>
+            {t('Abrir…')} <span className="text-xs text-muted-foreground">Ctrl/Cmd+O</span>
           </button>
           <button type="button" className={ITEM} onClick={run(onSave)}>
-            {t('Guardar')} <span className="text-xs text-muted-foreground">Ctrl+S</span>
+            {t('Guardar')} <span className="text-xs text-muted-foreground">Ctrl/Cmd+S</span>
           </button>
           <button type="button" className={ITEM} onClick={run(onExportPdf)}>
-            {t('Exportar PDF…')} <span className="text-xs text-muted-foreground">Ctrl+P</span>
+            {t('Exportar PDF…')} <span className="text-xs text-muted-foreground">Ctrl/Cmd+P</span>
           </button>
           <div className="my-1 h-px bg-border" />
           <button type="button" className={ITEM} onClick={run(onSettings)}>
