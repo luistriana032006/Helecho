@@ -187,16 +187,18 @@ export function registerAlexandriaSecurity() {
           callback(chosen ? { video: chosen } : {})
           return
         }
-        const sources = await desktopCapturer.getSources({ types: ['screen'] })
-        const screen = sources[0]
-        if (!screen) {
-          callback({})
-          return
-        }
         const wc = webContents.fromFrame(request.frame)
         const parent = (wc && BrowserWindow.fromWebContents(wc)) ?? undefined
         const allowed = await confirmFullScreenShare(request.securityOrigin, parent)
-        callback(allowed ? { video: screen } : {})
+        if (!allowed) {
+          callback({})
+          return
+        }
+        // En macOS enumerar fuentes puede activar el permiso del sistema;
+        // primero se explica y confirma la petición dentro de Helecho.
+        const sources = await desktopCapturer.getSources({ types: ['screen'] })
+        const screen = sources[0]
+        callback(screen ? { video: screen } : {})
       } catch (err) {
         // Portal cancelado o captura no disponible: se deniega sin romper
         if (DEV) console.log('[alexandria] compartir pantalla falló:', err)
@@ -282,12 +284,12 @@ export function registerAlexandriaSecurity() {
 
     // Atajos que funcionan aunque el foco esté DENTRO de la página
     // (los keydown del invitado no llegan al renderer de Helecho):
-    // F5/Ctrl+R recarga, F12 abre las DevTools de la página,
+    // F5/Ctrl+R/Cmd+R recarga, F12 abre las DevTools de la página,
     // F9 alterna el modo enfoque (solo el webview embebido tiene
     // hostWebContents; las ventanas de login no participan)
     contents.on('before-input-event', (_event, input) => {
       if (input.type !== 'keyDown') return
-      if (input.key === 'F5' || (input.control && input.key.toLowerCase() === 'r')) {
+      if (input.key === 'F5' || ((input.control || input.meta) && input.key.toLowerCase() === 'r')) {
         contents.reload()
       } else if (input.key === 'F12') {
         contents.openDevTools({ mode: 'detach' })

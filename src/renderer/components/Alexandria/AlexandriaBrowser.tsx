@@ -148,7 +148,7 @@ const navBtn =
   'flex size-7 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent'
 
 interface BrowserProps {
-  /** Atajos F5 / Ctrl+T / Ctrl+W activos (el panel los apaga al plegarse) */
+  /** Atajos F5 / Ctrl/Cmd+T / Ctrl/Cmd+W activos (el panel los apaga al plegarse) */
   active: boolean
 }
 
@@ -208,13 +208,14 @@ export default function AlexandriaBrowser({ active }: BrowserProps) {
         webviews.current.get(activeTab.id)?.reload()
         return
       }
-      // Ctrl+T / Ctrl+W solo con el foco dentro del navegador: no robarle
+      // Ctrl/Cmd+T / Ctrl/Cmd+W solo con el foco dentro del navegador: no robarle
       // atajos al editor
       if (!rootRef.current?.contains(document.activeElement)) return
-      if (e.ctrlKey && e.key.toLowerCase() === 't') {
+      const primaryModifier = e.ctrlKey || e.metaKey
+      if (primaryModifier && e.key.toLowerCase() === 't') {
         e.preventDefault()
         storeAddTab()
-      } else if (e.ctrlKey && e.key.toLowerCase() === 'w') {
+      } else if (primaryModifier && e.key.toLowerCase() === 'w') {
         e.preventDefault()
         closeTab(activeTab.id)
       }
@@ -278,7 +279,7 @@ export default function AlexandriaBrowser({ active }: BrowserProps) {
                 e.stopPropagation()
                 closeTab(tab.id)
               }}
-              aria-label={tr('Cerrar pestaña (Ctrl+W)')}
+              aria-label={tr('Cerrar pestaña (Ctrl/Cmd+W)')}
               className="flex size-3.5 shrink-0 items-center justify-center rounded-full hover:bg-foreground/10"
             >
               <X className="size-3" aria-hidden />
@@ -287,8 +288,8 @@ export default function AlexandriaBrowser({ active }: BrowserProps) {
         ))}
         <button
           onClick={() => storeAddTab()}
-          aria-label={tr('Nueva pestaña (Ctrl+T)')}
-          title={tr('Nueva pestaña (Ctrl+T)')}
+          aria-label={tr('Nueva pestaña (Ctrl/Cmd+T)')}
+          title={tr('Nueva pestaña (Ctrl/Cmd+T)')}
           className="flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <Plus className="size-3.5" aria-hidden />

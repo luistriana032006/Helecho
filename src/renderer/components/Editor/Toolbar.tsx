@@ -89,7 +89,7 @@ function ZoomControl() {
   const setZoom = useSettingsStore((s) => s.setZoom)
   return (
     <div className="ml-auto flex items-center gap-1.5">
-      <button type="button" className={btn} onClick={() => setZoom(zoom - 0.1)} aria-label={t('Alejar (Ctrl+−)')}>
+      <button type="button" className={btn} onClick={() => setZoom(zoom - 0.1)} aria-label={t('Alejar (Ctrl/Cmd+−)')}>
         <Minus className="size-4" aria-hidden />
       </button>
       <input
@@ -102,7 +102,7 @@ function ZoomControl() {
         className="h-1 w-28 accent-primary"
         aria-label="Zoom"
       />
-      <button type="button" className={btn} onClick={() => setZoom(zoom + 0.1)} aria-label={t('Acercar (Ctrl++)')}>
+      <button type="button" className={btn} onClick={() => setZoom(zoom + 0.1)} aria-label={t('Acercar (Ctrl/Cmd++)')}>
         <Plus className="size-4" aria-hidden />
       </button>
       <button

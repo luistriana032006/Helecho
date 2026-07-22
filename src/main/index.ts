@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, dialog, ipcMain } from 'electron'
+import { app, BrowserWindow, Menu, dialog, ipcMain, type MenuItemConstructorOptions } from 'electron'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { IPC } from '../shared/ipcChannels'
@@ -120,7 +120,9 @@ function createWindow() {
       nodeIntegration: false,
       webviewTag: true, // Alexandria — ver alexandriaSecurity.ts
     },
-    titleBarStyle: 'hiddenInset',
+    // macOS necesita una barra nativa movible y espacio para los semáforos.
+    // hiddenInset se conserva en las demás plataformas, donde ya era usado.
+    ...(process.platform === 'darwin' ? {} : { titleBarStyle: 'hiddenInset' as const }),
     title: 'Helecho',
   })
 
@@ -143,10 +145,30 @@ function createWindow() {
   return win
 }
 
+function configureApplicationMenu() {
+  if (process.platform !== 'darwin') {
+    // En Linux/Windows los atajos nativos de zoom pisan los propios de Helecho.
+    Menu.setApplicationMenu(null)
+    return
+  }
+
+  const template: MenuItemConstructorOptions[] = [
+    { role: 'appMenu' },
+    {
+      role: 'viewMenu',
+      submenu: [
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' },
+      ],
+    },
+    { role: 'windowMenu' },
+  ]
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+}
+
 app.whenReady().then(() => {
-  // Sin menú nativo: los atajos por defecto de Electron (Ctrl+= zoom
-  // del navegador, etc.) pisarían los atajos propios de Helecho
-  Menu.setApplicationMenu(null)
+  configureApplicationMenu()
 
   registerFileHandlers()
   registerExportHandlers()
@@ -163,9 +185,9 @@ app.whenReady().then(() => {
     dirtyFileName = fileName
   })
 
-  const mainWindow = createWindow()
+  createWindow()
   // Auto-update contra GitHub Releases (solo en la app empaquetada)
-  initAutoUpdater(mainWindow)
+  initAutoUpdater()
   // AppImage: registra icono y entrada de menú en ~/.local/share (solo Linux
   // corriendo como AppImage; en dev y .deb no hace nada)
   integrateAppImage()
